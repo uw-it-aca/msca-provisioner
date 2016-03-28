@@ -9,3 +9,4 @@ nameparser>=0.2.8
 -e git+https://github.com/uw-it-aca/django-userservice#egg=Django-UserService
 -e git+https://github.com/uw-it-aca/authz_group#egg=AuthZ-Group
 -e git+https://github.com/uw-it-aca/django-aws-message#egg=django_aws_message
+--find-links wheelhouse
