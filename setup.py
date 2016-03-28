@@ -11,10 +11,10 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 setup(
     name='msca-provisioner',
     version='0.1',
-    packages=['manager'],
+    packages=['msca_provisioner', 'provisioner'],
     include_package_data=True,
     install_requires = [
-        'django>=1.7',
+        'django<2.0',
         'nameparser>=0.2.8'
     ],
     license='Apache License, Version 2.0',  # example license
