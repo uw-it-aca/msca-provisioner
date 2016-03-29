@@ -5,6 +5,6 @@ from django.template import RequestContext
 
 def home(request):
     params = {}
-    return render_to_response('supporttools/home.html',
+    return render_to_response('provisioner/home.html',
                               params,
                               context_instance=RequestContext(request))

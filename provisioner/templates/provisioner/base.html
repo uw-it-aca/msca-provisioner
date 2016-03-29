@@ -1,0 +1,21 @@
+{% extends 'supporttools/base.html' %}
+
+{% load staticfiles %}
+
+{% block extra_css %}
+<link rel="stylesheet/less" type="text/css" href="{% static 'supporttools/css/mobile.less' %}">
+{% endblock extra_css %}
+
+{% block content %}
+{% csrf_token %}
+
+<div id="main" role="main">
+    <div class="inner">
+        {% block admin_content %}{% endblock %}
+    </div>
+</div>
+{% endblock content %}
+
+{% block extra_js %}
+<script src="{% static 'provisioner/vendor/js/less.js' %}"></script>
+{% endblock extra_js %}
