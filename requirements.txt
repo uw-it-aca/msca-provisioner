@@ -4,9 +4,11 @@ django-appconf
 PyOpenSSL
 python-dateutil
 nameparser>=0.2.8
+-e git+https://github.com/uw-it-aca/django-userservice#egg=Django-UserService
 -e git+https://github.com/uw-it-aca/uw-restclients#egg=RestClients
 -e git+https://github.com/uw-it-aca/django-supporttools#egg=django_supporttools
 -e git+https://github.com/uw-it-aca/django-aws-message#egg=django_aws_message
+-e git+https://github.com/abztrakt/django-mobileesp#egg=django_mobileesp
 --find-links wheelhouse
 PyCrypto==2.6.1
 lxml==3.4.4
