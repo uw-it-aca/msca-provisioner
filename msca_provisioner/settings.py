@@ -88,7 +88,7 @@ WSGI_APPLICATION = 'msca_provisioner.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
+        'ENGINE': 'sql_server.pyodbc',
         'NAME': os.environ['DJANGO_DB_NAME'],
         'USER': os.environ['DJANGO_DB_USER'],
         'PASSWORD': os.environ['DJANGO_DB_PASSWORD'],
@@ -168,3 +168,25 @@ LOGGING = {
 #COMPRESSOR SETTINGS
 COMPRESS_ENABLED = False
 COMPRESS_OFFLINE = False
+
+
+# KWS settings
+RESTCLIENTS_KWS_CERT_FILE=os.environ['KWS_CERT_FILE'],
+RESTCLIENTS_KWS_KEY_FILE=os.environ['KWS_KEY_FILE'],
+RESTCLIENTS_KWS_HOST = 'https://wseval.s.uw.edu:443'
+
+
+AWS_SQS = {
+    'SUBSCRIPTION' : {
+        'TOPIC_ARN' : os.environ['SQS_SUBSCRIPTION_TOPIC_ARN'],
+        'QUEUE': os.environ['SQS_SUBSCRIPTION_QUEUE'],
+        'KEY_ID': os.environ['SQS_SUBSCRIPTION_KEY_ID'],
+        'KEY': os.environ['SQS_SUBSCRIPTION_KEY'],
+        'VISIBILITY_TIMEOUT': 60,
+        'MESSAGE_GATHER_SIZE': 12,
+        'VALIDATE_SNS_SIGNATURE': True,
+        'VALIDATE_MSG_SIGNATURE': True,
+        'EVENT_COUNT_PRUNE_AFTER_DAY': 2,
+        'PAYLOAD_SETTINGS': {}
+    },
+}
