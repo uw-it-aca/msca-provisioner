@@ -85,7 +85,7 @@ WSGI_APPLICATION = 'msca_provisioner.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases
-
+print 'HOST HOST HOST %s' % (os.environ['DJANGO_DB_HOST'])
 DATABASES = {
     'default': {
         'ENGINE': 'sql_server.pyodbc',
@@ -93,7 +93,10 @@ DATABASES = {
         'USER': os.environ['DJANGO_DB_USER'],
         'PASSWORD': os.environ['DJANGO_DB_PASSWORD'],
         'HOST': os.environ['DJANGO_DB_HOST'],
-        'PORT': '',
+        'PORT': os.environ['DJANGO_DB_PORT'],
+        'OPTIONS': {
+            'driver': 'SQL Server Native Client 11.0',
+        },
     }
 }
 

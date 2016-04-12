@@ -1,4 +1,4 @@
-Django==1.7.11
+Django>=1.9
 django-compressor<2.0
 django-appconf
 PyOpenSSL
@@ -13,4 +13,3 @@ django-pyodbc-azure
 --find-links wheelhouse
 PyCrypto==2.6.1
 lxml==3.4.4
-mysql-python
