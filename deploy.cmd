@@ -144,7 +144,8 @@ IF EXIST "%DEPLOYMENT_TARGET%\manage.py" (
       )
       env\scripts\python manage.py collectstatic --noinput --clear
       echo Migrating Django databases.
-      env\scripts\python manage.py migrate --noinput --no-color
+      env\scripts\python manage.py migrate events --noinput --no-color
+      env\scripts\python manage.py migrate provisioner --noinput --no-color
     )
   )
 )
