@@ -134,18 +134,20 @@ IF EXIST "%DEPLOYMENT_SOURCE%\web.%PYTHON_VER%.config" (
   copy /y "%DEPLOYMENT_SOURCE%\web.%PYTHON_VER%.config" "%DEPLOYMENT_TARGET%\web.config"
 )
 
-:: 6. Django collectstatic
+:: 6. Django collectstatic and migrations
 IF EXIST "%DEPLOYMENT_TARGET%\manage.py" (
   IF EXIST "%DEPLOYMENT_TARGET%\env\lib\site-packages\django" (
     IF NOT EXIST "%DEPLOYMENT_TARGET%\.skipDjango" (
-      echo Collecting Django static files. You can skip Django specific steps with a .skipDjango file.
+      echo Running Django commands.  You can skip Django specific steps with a .skipDjango file.
+      echo Migrating Django events database.
+      env\scripts\python manage.py migrate events --noinput --no-color
+      echo Migrating Django provisioner database.
+      env\scripts\python manage.py migrate provisioner --noinput --no-color
+      echo Collecting Django static files.
       IF NOT EXIST "%DEPLOYMENT_TARGET%\static" (
         MKDIR "%DEPLOYMENT_TARGET%\static"
       )
       env\scripts\python manage.py collectstatic --noinput --clear
-      echo Migrating Django databases.
-      env\scripts\python manage.py migrate events --noinput --no-color
-      env\scripts\python manage.py migrate provisioner --noinput --no-color
     )
   )
 )

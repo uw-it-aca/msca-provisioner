@@ -5,30 +5,27 @@ from time import time
 from math import floor
 import dateutil.parser
 from django.conf import settings
-from django.utils.log import getLogger
+from logging import getLogger
 from provisioner.models import Subscription as SubscriptionModel
 from provisioner.cache import RestClientsCache
-from restclients.kws import KWS
 from restclients.exceptions import DataFailureException
 from events.models import SubscriptionLog
 from aws_message.crypto import aes128cbc, Signature, CryptoException
+from aws_message.extract import Extract
 
 
 class SubscriptionException(Exception):
     pass
 
 
-class Subscription(object):
+class Subscription(Extract):
     """
     UW Identity Registration Subscription Event Handler
     """
 
     # What we expect in a subscription message
-    _subscriptionMessageType = 'idreg-v1-subscription'
-    _subscriptionMessageVersion = '1'
-
-    _header = None
-    _body = None
+    _subscriptionMessageType = 'idreg'
+    _subscriptionMessageVersion = 'UWIT-1'
 
     def __init__(self, settings, message):
         """
@@ -36,124 +33,58 @@ class Subscription(object):
 
         Raises SubscriptionException
         """
-        self._kws = KWS()
-        self._settings = settings
-        self._message = message
-        self._header = message['Header']
-        self._body = message['Body']
-        self._re_guid = re.compile(r'^[\da-f]{8}(-[\da-f]{4}){3}-[\da-f]{12}$', re.I)
-        if self._header['MessageType'] != self._subscriptionMessageType:
-            raise SubscriptionException(
-                'Unknown Message Type: %s' % (self._header['MessageType']))
-
+        super(Subscription, self).__init__(settings, message)
         self._log = getLogger(__name__)
 
     def process(self):
-        if self._settings.get('VALIDATE_MSG_SIGNATURE', True):
-            self.validate()
+        if self._header['messageType'] != self._subscriptionMessageType:
+            raise SubscriptionException(
+                'Unknown Message Type: %s' % (self._header['messageType']))
 
-        subscriptions = 0
-        for event in self._extract()['Events']:
-            if event['context']['version'] != 'v1':
-                raise SubscriptionException(
-                    'Unknown Subscription version: %s' % (
-                        event['context']['version']))
+        context = json.loads(b64decode(self._header['messageContext']))
 
-            if event['context']['topic'] != 'subcription':
-                raise SubscriptionException(
-                    'Unknown Subscription topic: %s' % (
-                        event['context']['topic']))
+        if context['version'] != 'v1':
+            raise SubscriptionException(
+                'Unknown Subscription version: %s' % (
+                    context['version']))
 
-            subcription = int(event['subscription'])
+        if context['topic'] != 'subscription':
+            self._log.debug('Unknown Subscription topic: %s' % (
+                context['topic']))
+            return
 
-            try:
-                SubscriptionModel.objects.get(
-                    net_id=event['uwnetid'],
-                    subscription=subscription)
+        subscription = self.extract()
+        subscription['subscription'] = int(subscription['subscription'])
 
-            except SubscriptionModel.DoesNotExist:
-                sub = SubscriptionModel(
-                    net_id=event['uwnetid'],
-                    subscription=subscription,
-                    state=STATE_INITIAL)
-                sub.save()
-                subscriptions += 1
-                                        
-        self._recordSuccess(subscriptions)
+        if subscription['subscription'] not in self._settings.get('SUBSCRIPTIONS', {}):
+            self._log.debug('Unknown Subscription code: %s' % (
+                subscription['subscription']))
+            return
 
-    def validate(self):
-        t = self._header['Version']
-        if t != self._subscriptionMessageVersion:
-            raise SubscriptionException('Unknown Version: ' + t)
+        if subscription['type'] in ['insert', 'modify']:
+            self._addSubscription(subscription)
+        else:
+            self._log.debug('Unknown Subscription type: %s' % (
+                subscription['type']))
 
-        to_sign = self._header['MessageType'] + '\n' \
-            + self._header['MessageId'] + '\n' \
-            + self._header['TimeStamp'] + '\n' \
-            + self._body + '\n'
-
-        sig_conf = {
-            'cert': {
-                'type': 'url',
-                'reference': self._header['SigningCertURL']
-            }
-        }
-
+    def _addSubscription(self, subscription):
         try:
-            Signature(sig_conf).validate(to_sign.encode('ascii'),
-                                         b64decode(self._header['Signature']))
-        except CryptoException as err:
-            raise SubscriptionException('Crypto: %s' % (err))
-        except Exception as err:
-            raise SubscriptionException('Invalid signature: %s' % (err))
+            sub = SubscriptionModel.objects.get(
+                net_id=subscription['uwnetid'],
+                subscription=subscription['subscription'])
 
-    def _extract(self):
-        try:
-            t = self._header['Encoding']
-            if str(t).lower() != 'base64':
-                raise SubscriptionException('Unkown encoding: ' + t)
+            self._log.info('Event %s on %s for %s, processing: %s' % (
+                subscription['type'], sub.subscription, sub.net_id, sub.state))
 
-            t = self._header.get('Algorithm', 'aes128cbc')
-            if str(t).lower() != 'aes128cbc':
-                raise SubscriptionException('Unsupported algorithm: ' + t)
+            return
+        except SubscriptionModel.DoesNotExist:
+            sub = SubscriptionModel(
+                net_id=subscription['uwnetid'],
+                subscription=subscription['subscription'],
+                state=SubscriptionModel.STATE_ACTIVATE)
+            sub.save()
 
-            # regex removes cruft around JSON
-            rx = re.compile(r'[^{]*({.*})[^}]*')
-            key_id = self._header['KeyId']
-            if key_id and re.match(self._re_guid, key_id):
-                key = self._kws.get_key(key_id).key
-                body = self._decryptBody(key)
-            else:
-                try:
-                    key = self._kws.get_current_key(
-                        self._header['MessageType']).key
-                    body = self._decryptBody(key)
-                    # look like json?
-                    if not re.match(r'^\s*{.+}\s*$', body):
-                        raise CryptoException()
-                except (ValueError, CryptoException) as err:
-                    RestClientsCache().delete_cached_kws_current_key(
-                        self._header['MessageType'])
-                    key = self._kws.get_current_key(
-                        self._header['MessageType']).key
-                    body = self._decryptBody(key)
-
-            return(json.loads(rx.sub(r'\g<1>', body)))
-        except KeyError as err:
-            self._log.error("Key Error: %s\nHEADER: %s" % (err, self._header));
-            raise
-        except (ValueError, CryptoException) as err:
-            raise SubscriptionException('Cannot decrypt: %s' % (err))
-        except DataFailureException as err:
-            msg = "Request failure for %s: %s (%s)" % (
-                self.url, self.msg, self.status)
-            self._log.error(msg)
-            raise SubscriptionException(msg)
-        except Exception as err:
-            raise SubscriptionException('Cannot read: %s' % (err))
-
-    def _decryptBody(self, key):
-        cipher = aes128cbc(b64decode(key), b64decode(self._header['IV']))
-        return cipher.decrypt(b64decode(self._body))
+        self._recordSuccess(1)
 
     def _recordSuccess(self, count):
         minute = int(floor(time() / 60))

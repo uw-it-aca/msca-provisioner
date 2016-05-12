@@ -20,16 +20,22 @@ class Subscription(models.Model):
         (ACTION_REUSER, "Reuser"),
     )
 
-    STATE_INITIAL = "initial"
+    STATE_ACTIVATE = "activate"
+    STATE_ACTIVATING = "activating"
     STATE_ACTIVE = "active"
+    STATE_DELETE = "delete"
+    STATE_DELETING = "deleting"
     STATE_DELETED = "deleted"
     STATE_PENDING = "pending"
     STATE_FAILED = "failed"
     STATE_DISUSER = "disuser"
 
     STATE_CHOICES = (
-        (STATE_INITIAL, "Initial"),
+        (STATE_ACTIVATE, "Activate"),
+        (STATE_ACTIVATING, "Activating"),
         (STATE_ACTIVE, "Active"),
+        (STATE_DELETE, "Delete"),
+        (STATE_DELETING, "Deleting"),
         (STATE_DELETED, "Deleted"),
         (STATE_PENDING, "Pending"),
         (STATE_FAILED, "Failed"),
@@ -39,6 +45,7 @@ class Subscription(models.Model):
     net_id = models.CharField(max_length=20, unique=True)
     subscription = models.SmallIntegerField(default=0)
     state = models.CharField(max_length=16, choices=STATE_CHOICES)
+    modified_date = models.DateTimeField(auto_now=True)
 
 
 class Job(models.Model):

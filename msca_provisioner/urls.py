@@ -1,6 +1,7 @@
-from django.conf.urls import patterns, include, url
+from django.conf.urls import url
+from provisioner.views import home
 
-urlpatterns = patterns('',
-    url(r'^$', 'provisioner.views.home', name='home'),
+urlpatterns = [
+    url(r'^$', home, name='home'),
     #url(r'^admin/', include(admin.site.urls)),
-)
+]

@@ -25,7 +25,7 @@ DEBUG = True
 TEMPLATE_DEBUG = True
 
 ALLOWED_HOSTS = [
-    os.environ['DJANGO_ALLOWED_HOSTS']
+    os.getenv('DJANGO_ALLOWED_HOSTS', '*')
 ]
 
 SUPPORTTOOLS_PARENT_APP = 'Office 365'
@@ -41,6 +41,7 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'supporttools',
+    'restclients',
     'userservice',
     'compressor',
     'provisioner',
@@ -86,8 +87,8 @@ WSGI_APPLICATION = 'msca_provisioner.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases
 
-DATABASES = {
-    'default': {
+try:
+    DB_DEFAULT = {
         'ENGINE': 'sql_server.pyodbc',
         'NAME': os.environ['DJANGO_DB_NAME'],
         'USER': os.environ['DJANGO_DB_USER'],
@@ -96,8 +97,17 @@ DATABASES = {
         'PORT': os.environ['DJANGO_DB_PORT'],
         'OPTIONS': {
             'driver': 'SQL Server Native Client 11.0',
-        },
+        }
     }
+except KeyError:
+    DB_DEFAULT = {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': 'db.sqlite3'
+    }
+
+
+DATABASES = {
+    'default': DB_DEFAULT
 }
 
 # Internationalization
@@ -154,15 +164,20 @@ LOGGING = {
         'django': {
             'handlers':['file'],
             'propagate': True,
-            'level':'DEBUG',
+            'level':'INFO',
+        },
+        'aws_message': {
+            'handlers':['file'],
+            'propagate': True,
+            'level':'INFO',
         },
         'provisioner': {
             'handlers': ['file'],
-            'level': 'DEBUG',
+            'level': 'INFO',
         },
         'events': {
             'handlers': ['file'],
-            'level': 'DEBUG',
+            'level': 'INFO',
         },
     }
 }
@@ -173,11 +188,62 @@ COMPRESS_ENABLED = False
 COMPRESS_OFFLINE = False
 
 
-# KWS settings
-RESTCLIENTS_KWS_CERT_FILE=os.environ['KWS_CERT_FILE'],
-RESTCLIENTS_KWS_KEY_FILE=os.environ['KWS_KEY_FILE'],
-RESTCLIENTS_KWS_HOST = 'https://wseval.s.uw.edu:443'
+# UW NetId Web Service settings
+RESTCLIENTS_UWNETID_DAO_CLASS = 'restclients.dao_implementation.uwnetid.Live'
+RESTCLIENTS_UWNETID_HOST=os.environ['UWNETID_HOST']
+RESTCLIENTS_UWNETID_KEY_FILE=os.environ['UWNETID_KEY_FILE']
+RESTCLIENTS_UWNETID_CERT_FILE=os.environ['UWNETID_CERT_FILE']
 
+
+# Office 365 settings
+RESTCLIENTS_O365_DAO_CLASS = 'restclients.dao_implementation.o365.Live'
+RESTCLIENTS_O365_PRINCIPLE_DOMAIAN=os.environ['O365_PRINCIPLE_DOMAIN']
+RESTCLIENTS_O365_TENANT=os.environ['O365_TENANT']
+RESTCLIENTS_O365_CLIENT_ID=os.environ['O365_CLIENT_ID']
+RESTCLIENTS_O365_CLIENT_SECRET=os.environ['O365_CLIENT_SECRET']
+
+
+# Dictionary mapping subscription codes to Office 365 licenses.
+# Each subscription code is a dictionary of license SKU Part
+# Numbers that contain a list of disabled service plans within
+# the license.
+O365_PRODUCTION_LICENSE_MAP = {
+    233: {   # UW Office 365 Education'
+        'STANDARDWOFFPACK_FACULTY': []
+    },
+    235: {   # UW Office 365 ProPlus'
+        'OFFICESUBSCRIPTION_FACULTY': []
+    },
+    237: {   # UW Project Server Online user access'
+        'PROJECTONLINE_PLAN_1_FACULTY': []
+    },
+    239: {   # UW Power BI'
+        'POWER_BI_STANDARD': []
+    }
+}
+
+O365_TEST_LICENSE_MAP = {
+    234: {   # UW Office 365 Education (Dogfood)'
+        'STANDARDWOFFPACK_IW_FACULTY': []
+        #'STANDARDWOFFPACK_FACULTY': []
+    },
+    236 : {  # UW Office 365 ProPlus (Dogfood)'
+        'OFFICESUBSCRIPTION_FACULTY': []
+    },
+    238: {   # UW Project Server Online user access (Dogfood)'
+        'PROJECTONLINE_PLAN_1_FACULTY': []
+    },
+    240: {   # UW Power BI (Dogfood)'
+        'POWER_BI_STANDARD': []
+    }
+}
+
+O365_LICENSE_MAP = O365_TEST_LICENSE_MAP
+O365_ACTIVATE_PROCESS_LIMIT = 500
+
+RESTCLIENTS_CA_BUNDLE = os.environ['CA_BUNDLE']
+RESTCLIENTS_TIMEOUT = None
+AWS_CA_BUNDLE = os.environ['CA_BUNDLE']
 
 AWS_SQS = {
     'SUBSCRIPTION' : {
@@ -186,10 +252,12 @@ AWS_SQS = {
         'KEY_ID': os.environ['SQS_SUBSCRIPTION_KEY_ID'],
         'KEY': os.environ['SQS_SUBSCRIPTION_KEY'],
         'VISIBILITY_TIMEOUT': 60,
-        'MESSAGE_GATHER_SIZE': 12,
+        'MESSAGE_GATHER_SIZE': 100,
         'VALIDATE_SNS_SIGNATURE': True,
         'VALIDATE_MSG_SIGNATURE': True,
         'EVENT_COUNT_PRUNE_AFTER_DAY': 2,
-        'PAYLOAD_SETTINGS': {}
-    },
+        'PAYLOAD_SETTINGS': {
+            'SUBSCRIPTIONS': O365_LICENSE_MAP
+        }
+    }
 }
