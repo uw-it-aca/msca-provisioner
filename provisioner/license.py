@@ -14,8 +14,11 @@ logger = getLogger(__name__)
 class License(Resolve):
     def process(self):
         limit = getattr(settings, 'O365_ACTIVATE_PROCESS_LIMIT', 100)
-        for activating in Subscription.objects.filter(
-                state=Subscription.STATE_ACTIVATE)[:limit]:
+        activate = Subscription.objects.filter(
+            state=Subscription.STATE_ACTIVATE
+            in_process__isnull=True)[:limit]
+        activate.update(in_process=True)
+        for activating in activate:
             try:
                 subscriptions = get_netid_subscriptions(
                     activating.net_id, [activating.subscription])
@@ -23,8 +26,11 @@ class License(Resolve):
                 if ex.status == 404:
                     logger.warning('Subscription %s for netid %s does not exist' % (
                         activating.subscription, activating.net_id))
+                    activating.in_process = null
+                    activating.save()
                     continue
                 else:
+                    activate.update(in_process=null)
                     raise
 
             for sub in subscriptions:
@@ -61,3 +67,6 @@ class License(Resolve):
                         activating.save()
                 except MSCAProvisionerException as ex:
                     self.log.error("Subscribe: %s" % (ex))
+
+            activating.in_process = null
+            activating.save()

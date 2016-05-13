@@ -46,6 +46,7 @@ class Subscription(models.Model):
     subscription = models.SmallIntegerField(default=0)
     state = models.CharField(max_length=16, choices=STATE_CHOICES)
     modified_date = models.DateTimeField(auto_now=True)
+    in_process = models.NullBooleanField()
 
 
 class Job(models.Model):

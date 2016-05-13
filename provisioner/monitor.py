@@ -6,9 +6,11 @@ from restclients.models.uwnetid import Subscription as NWSSubscription
 
 class Monitor(Resolve):
     def confirm_activation(self):
-        import pdb; pdb.set_trace()
-        for sub in Subscription.objects.filter(
-                state=Subscription.STATE_ACTIVATING):
+        subscriptions = Subscription.objects.filter(
+            state=Subscription.STATE_ACTIVATING,
+            in_process__isnull=True)
+        subscriptions.update(in_process=True)
+        for sub in subscriptions:
             if self.has_subscription_licensing(sub):
                 try:
                     modify_subscription_status(
@@ -21,11 +23,18 @@ class Monitor(Resolve):
                     sub.state = Subscription.STATE_ACTIVE
                     sub.save()
                 except:
+                    subscriptions.update(in_process=null)
                     raise
 
+            sub.in_process=null
+            sub.save()
+
     def confirm_deactivation(self):
-        for sub in Subscription.objects.filter(
-                state=Subscription.STATE_DELETING):
+        subscriptions = Subscription.objects.filter(
+            state=Subscription.STATE_ACTIVATING,
+            in_process__isnull=True)
+        subscriptions.update(in_process=True)
+        for sub in subscriptions:
             if not self.has_subscription_licensing(sub):
                 try:
                     modify_subscription_status(
@@ -38,4 +47,8 @@ class Monitor(Resolve):
                     sub.state = Subscription.STATE_DELETED
                     sub.save()
                 except:
+                    subscriptions.update(in_process=null)
                     raise
+
+            sub.in_process=null
+            sub.save()
