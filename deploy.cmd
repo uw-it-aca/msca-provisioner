@@ -167,7 +167,7 @@ echo Handling WebJob deployment.
 pushd "%DEPLOYMENT_SOURCE%\webjobs"
 
 FOR /D %%G in (*) DO (
-    SET JOBDIR="%DEPLOYMENT_TARGET%\App_Data\Jobs\Continuous\%%G"
+    SET JOBDIR=%DEPLOYMENT_TARGET%\App_Data\Jobs\Continuous\%%G
     echo Deploying webjob "%%G" to "%JOBDIR%"
     IF NOT EXIST "%JOBDIR%" MKDIR "%JOBDIR%"
     XCOPY /Q /Y /R "%%G" "%JOBDIR%"
