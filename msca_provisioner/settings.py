@@ -12,6 +12,11 @@ https://docs.djangoproject.com/en/1.7/ref/settings/
 import os
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
+MSCA_MANAGER_ADMIN_GROUP = 'u_acadev_msca_support'
+RESTCLIENTS_ADMIN_GROUP = MSCA_MANAGER_ADMIN_GROUP
+USERSERVICE_ADMIN_GROUP = MSCA_MANAGER_ADMIN_GROUP
+
+AUTHZ_GROUP_BACKEND = 'authz_group.authz_implementation.uw_group_service.UWGroupService'
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.7/howto/deployment/checklist/
@@ -20,7 +25,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 SECRET_KEY = os.environ['DJANGO_SECRET_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = int(os.environ['DJANGO_DEBUG'])
 
 TEMPLATE_DEBUG = True
 
@@ -40,24 +45,25 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'templatetag_handlebars',
     'supporttools',
-    'restclients',
     'userservice',
+    'authz_group',
     'compressor',
+    'restclients',
     'provisioner',
     'events',
 )
 
 MIDDLEWARE_CLASSES = (
-    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
+    'django.contrib.auth.middleware.RemoteUserMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-#    'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'userservice.user.UserServiceMiddleware',
-    'django_mobileesp.middleware.UserAgentDetectionMiddleware',
 )
 
 TEMPLATE_CONTEXT_PROCESSORS = (
@@ -71,6 +77,10 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.contrib.messages.context_processors.messages',
     'supporttools.context_processors.supportools_globals',
     'supporttools.context_processors.has_less_compiled',
+)
+
+AUTHENTICATION_BACKENDS = (
+     'django.contrib.auth.backends.RemoteUserBackend',
 )
 
 from django_mobileesp.detector import agent
@@ -187,6 +197,10 @@ LOGGING = {
 COMPRESS_ENABLED = False
 COMPRESS_OFFLINE = False
 
+RESTCLIENTS_GWS_DAO_CLASS = 'restclients.dao_implementation.gws.Live'
+RESTCLIENTS_GWS_HOST='https://groups.uw.edu'
+RESTCLIENTS_GWS_KEY_FILE=os.environ['UWNETID_KEY_FILE']
+RESTCLIENTS_GWS_CERT_FILE=os.environ['UWNETID_CERT_FILE']
 
 # UW NetId Web Service settings
 RESTCLIENTS_UWNETID_DAO_CLASS = 'restclients.dao_implementation.uwnetid.Live'
@@ -261,3 +275,7 @@ AWS_SQS = {
         }
     }
 }
+
+# admin app settings
+ADMIN_EVENT_GRAPH_FREQ = 10
+ADMIN_IMPORT_STATUS_FREQ = 30

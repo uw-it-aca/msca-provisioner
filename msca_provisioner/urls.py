@@ -1,7 +1,10 @@
-from django.conf.urls import url
-from provisioner.views import home
+from django.conf.urls import include, url
+from provisioner.views import ProvisionStatus, login
+
 
 urlpatterns = [
-    url(r'^$', home, name='home'),
-    #url(r'^admin/', include(admin.site.urls)),
+    url(r'^$', ProvisionStatus, name='home'),
+    url(r'login.*', login),
+    url(r'^events/', include('events.urls')),
+    url(r'^provisioner/', include('provisioner.urls')),
 ]

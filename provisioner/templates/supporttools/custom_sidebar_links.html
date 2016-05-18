@@ -1,0 +1,9 @@
+<h3>Office 356 Support Tools</h3>
+<ul>
+    <li><a href="{% url 'provisioner.views.ProvisionStatus' %}">Status and General Health</a></li>
+    <li><a href="{% url 'provisioner.views.ManageJobs' %}">Manage Provisioning Jobs</a></li>
+</ul>
+
+{% if can_view_restclients|default_if_none:True %}
+{% include 'supporttools/default_sidelinks.html' %}
+{% endif %}

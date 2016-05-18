@@ -1,0 +1,333 @@
+// mobile first styles
+
+.badge {  padding: 2px 5px 2px; font-weight: normal; }
+
+
+body { padding: 0; margin: 0; }
+
+.inner { margin: 0; }
+
+
+#header { line-height: 70px;
+
+    .inner { margin-bottom: 0;
+        .app-logo { color: #666; text-transform: uppercase; font-size: 26px; font-weight: bold; background: url('../images/canvas-logo.png') no-repeat left center; width: 111px; height: 70px;
+        background-size: 110px; }
+
+        .app-user { margin-left: 10px;
+            .btn { margin-top: -3px; }
+        }
+    }
+
+}
+
+.working { color: darken(#428bca, 6.5%); }
+.success { color: #5cb85c; }
+.warning { color: #f0ad4e; }
+.failure { color: #d9534f; }
+.staged { color: lighten(#000, 88%); }
+.lightning { color: #FFC128; }
+
+#intro { margin-bottom: 1em; background-color: #39275B; color: #fff; border-color: #333;
+    h2 { margin-bottom: 0.4em; }
+    .lead { margin: 0; padding-bottom: 1em; font-size: 17px; line-height: 24px; }
+}
+
+#side-wrapper { color: #888;
+
+    #intro {
+        h1 { margin-bottom: .5em; margin-top: 60px; }
+        .uw { position: absolute; top: 15px; left: 20px;
+            width: 163px;
+            height: 55px;
+            line-height: 75px;
+            background: transparent url('../images/uw-canvas-logo.png') top left no-repeat;
+            /*background-size: 40px;*/
+            text-align: center;
+            z-index: 9999;
+        }
+    }
+
+}
+
+#main-wrapper { background: #fff; padding-top: .5em;
+
+    h2 { text-transform: uppercase; color: #666; font-size: 16px; }
+    h3 { font-weight: normal; font-size: 14px; margin-bottom: 0; }
+    input[type="text"], select { margin-bottom: 0; }
+
+}
+
+#main {
+
+    .course-filter {
+
+        .admin-switcher { display: inline-block; margin: 0; padding: 7px 12px; background: #f9f9f9;
+            input { width: 110px; }
+        }
+
+        .valid-require { border-color: #666; }
+    }
+
+    .course-list, .status-result-list { margin: 2em 0 0; clear: both;
+        .panel {
+            .course-name { display: inline-block; text-transform: uppercase; font-weight: normal; }
+            .course-available { color: #51a351; }
+            .course-emphasis { color: red; }
+            .course-pending { color: #F7D708; }
+
+            .popover { background-color: #ccc; }
+            .popover.bottom .arrow { border-bottom-color: #ccc; }
+            .popover-title { display: none; }
+            .popover-content { font-size: 12px; font-weight: normal; padding: 3px 6px 3px 12px; margin: 0; width: auto; }
+            .popover.right .arrow:after { border-right-color: #ccc;}
+
+            .panel-heading { list-style: none; font-size: 16px; line-height: 28px;
+                .panel-title { -webkit-font-smoothing: antialiased; font-weight: bold; font-size: 15px; text-transform: uppercase;
+                    a i { color: #888; width: 15px; margin-right: 10px; }
+                    i { margin-left: 8px; }
+                    button span { margin-left: 10px; margin-right: 6px; }
+                }
+                span.enrollment-active { color: #51a351; }
+                span.enrollment-deleted { color: #c00f0f; }
+            }
+            .panel-body { padding-left: 16px;
+                ul { list-style: none; padding: 0; margin: 0; line-height: 1.6em;
+                    li {
+                      span.blocked_state { color: #c00f0f; }
+                      i { margin-right: 14px; }
+                      span.fa-stack { margin-left: -8px;  margin-right: 8px; }
+                    }
+                }
+            }
+        }
+        .waiting { height: 60px; width: 100%; line-height: 60px; font-size: 36px; text-align: center; }
+    }
+
+    h1 { line-height: 70px;  }
+
+    .import-health {
+        ul { margin: 0; padding-left: 0; }
+
+        .import-status { background-color: #fff; margin: 0;
+            .import-list {
+                .action { display: none; float: right; height: 16px; width: 16px; margin: 6px; }
+                .action-requeue { background: transparent url('../images/reload.png') center center no-repeat;}
+                .action-delete { background: transparent url('../images/delete-circle.png') center center no-repeat;}
+                .has-response { color: lighten(#000, 80.3%); }
+
+                li:hover { background-color: #f8f8f8;
+                    .action { display: inline-block; padding-top: 6px; }
+                }
+
+                li {
+                    list-style: none;
+                    line-height: 25px;
+                    margin-bottom: 1em;
+                    > span:first-child {
+                        padding-left: 4px;
+                        display: inline-block;
+                        width: 30px;
+                    }
+
+                    .import-output {
+                      > div {
+                          font-size: 14px;
+                          line-height: 16px;
+                          margin-left: 60px;
+                          white-space: pre-wrap;
+                          word-wrap: break-word;
+                          text-indent: -28px;
+                          color: green;
+                      }
+                      .raw-output {
+                          span { font-family: monospace; }
+                      }
+                    }
+
+                    .progress { margin-bottom: 0; }
+                    }
+              }
+          }
+
+        .provision-errors { background-color: #fff; margin: 0; padding: 8px;
+            .action-requeue { background: transparent url('../images/reload.png') center center no-repeat;}
+            .action-delete { background: transparent url('../images/delete-circle.png') center center no-repeat;}
+            ul { margin: 0; padding-left: 0;
+                li { list-style: none; line-height: 25px;
+                    .action-requeue { display: none; height: 16px; width: 16px; margin: 0 0 0 0; }
+                    .action-delete { display: none; height: 16px; width: 16px; margin: 0 0 0 0; }
+                }
+                li:hover { background-color: #f8f8f8; margin: 0 -8px 0 -8px; padding: 0 8px 0 8px;
+                    .action-requeue { display: block; margin: 2px 4px 0 0; float: right; }
+                    .action-delete { display: block; margin-top: 2px 4px 0 0 ; float: right; }
+                }
+            }
+            p { font-size: smaller; }
+        }
+    }
+
+    .user-manager { width: 100%;
+         .admin-table-container { height: 180px; overflow-y: auto; }
+
+         .admin-table, .group-table {
+             td.waiting {
+                text-align: center;
+                font-size: 38px;
+                padding: 30px;
+            }
+            /*
+         	background-color: #CDCDCD;
+            margin:10px 0pt 15px;
+            font-size: 8pt;
+	        width: 100%;
+            text-align: left;
+            margin: 0;
+            *
+
+            thead tr th, table.tablesorter tfoot tr th {
+                background-color: #e6EEEE;
+                border: 1px solid #FFF;
+                font-size: 8pt;
+                padding: 4px;
+            }
+
+            thead tr .header {
+            	background-image: url(bg.gif);
+            	background-repeat: no-repeat;
+            	background-position: center right;
+            	cursor: pointer;
+            }
+            tbody td {
+            	color: #3D3D3D;
+            	padding: 4px;
+            	background-color: #FFF;
+            	vertical-align: top;
+            }
+            tbody tr.odd td {
+            	background-color:#F0F0F6;
+            }
+            thead tr .headerSortUp {
+            	background-image: url(asc.gif);
+            }
+            thead tr .headerSortDown {
+            	background-image: url(desc.gif);
+            }
+            thead tr .headerSortDown, table.tablesorter thead tr .headerSortUp {
+            background-color: #8dbdd8;
+            }
+            */
+
+        }
+
+        .provisioned-groups { height: 100px; width: 100%; background-color: #fff; overflow-y: auto; margin: 0;
+            .group-table { width: 100%; }
+        }
+
+    }
+
+    .event-freq {
+        ul { margin: 0; padding-left: 0; }
+        > div div { min-width:240px; height: 188px; margin: 0; background-color: #fff; }
+        #event-graph { height: 188px; }
+    }
+
+    .canvas-status {  min-height: 20px; font-size: 11px;
+        a { text-decoration: none; color: white; margin-left: 4px; margin-top: 4px; padding: 1px 6px; border-radius: 3px; display: inline-block; }
+        a:first-child { margin-right: 8px; }
+        .status-fetching { margin-left: 12px; color: black; }
+        .status-unknown { background-color: #888888; }
+        .status-green { background-color: #30CC66; }
+        .status-yellow { background-color: #CCCC00; }
+        .status-orange { background-color: #E67E22; }
+        .status-red { background-color: #CA021B; }
+    }
+
+}
+
+#footer { color: #bbb; margin: 1.5em 0; font-size: 12px;}
+
+
+.popover { background-color: #FFF5BF; }
+.popover.bottom .arrow { border-bottom-color: yellow; }
+.popover-title { display: none; }
+.popover.right .arrow:after { border-right-color: #FFF5BF;}
+
+// non-semantic helper classes - taken from html5boilerplate
+
+/*
+ * Image replacement
+ */
+
+.ir {
+    border: 0;
+    font: 0/0 a;
+    text-shadow: none;
+    color: transparent;
+    background-color: transparent;
+}
+
+/*
+ * Hide from both screenreaders and browsers: h5bp.com/u
+ */
+
+.hidden {
+    display: none !important;
+    visibility: hidden;
+}
+
+/*
+ * Hide only visually, but have it available for screenreaders: h5bp.com/v
+ */
+
+.visuallyhidden {
+    border: 0;
+    clip: rect(0 0 0 0);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    width: 1px;
+}
+
+/*
+ * Extends the .visuallyhidden class to allow the element to be focusable
+ * when navigated to via the keyboard: h5bp.com/p
+ */
+
+.visuallyhidden.focusable:active,
+.visuallyhidden.focusable:focus {
+    clip: auto;
+    height: auto;
+    margin: 0;
+    overflow: visible;
+    position: static;
+    width: auto;
+}
+
+/*
+ * Hide visually and from screenreaders, but maintain layout
+ */
+
+.invisible {
+    visibility: hidden;
+}
+
+/* Validation */
+
+.control-group.success {
+    .help-inline { display: none; }
+}
+
+/* Loading spinner */
+.waiting {  background: transparent url('../images/spinner.gif') center center no-repeat; }
+.loading {
+    background: transparent url('../images/spinner.gif') center center no-repeat;
+    width: 50px;
+    height: 50px;
+  }
+
+/* restclients overrides */
+.restclients-response-content { border: 1px solid #ddd; padding: 5px; }
+.restclients-response-content label { font-weight: normal; display: inline-block; }

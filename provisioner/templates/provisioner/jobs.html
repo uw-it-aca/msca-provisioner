@@ -1,0 +1,24 @@
+{% extends 'provisioner/base.html' %}
+
+{% block admin_content %}
+
+<h2>Manage Provisioning Jobs</h2>
+
+<div class="user-manager pull-left">
+    <div class="query-tabs clearfix">
+      <table id="jobs-table" class="admin-table table table-striped">
+        <thead>
+          <tr>
+            <th>Job</th>
+            <th>Last Run</th>
+            <th>Last Changed</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody class="scrollable"><tr><td colspan="5" class="waiting"><i class="fa fa-spin"></i></td></tr></tbody>
+      </table>
+    </div>
+</div>
+
+{% include "handlebars/provisioner/job_table_row.html" %}
+{% endblock %}

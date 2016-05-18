@@ -1,0 +1,24 @@
+{% extends 'provisioner/base.html' %}
+{% load templatetag_handlebars %}
+
+{% block admin_content %}
+
+<h2>Status and General Health</h2>
+
+<div class="event-freq clearfix">
+    <div id="event-tab-1" class="pull-left" style="width:65%;">
+        <h3>Event frequency <span id="event-count" class="badge">0</span></h3>
+        <div id="event-graph"></div>
+        <p>Highlight to zoom!</p>
+    </div>
+    <div id="event-tab-2" class="pull-right" style="width:35%;">
+        <h3>Event Rate</h3>
+        <div id="event-gauge"></div>
+    </div>
+</div>
+
+<h3>Provisioning Users <span id="provision-count" class="badge">0</span></h3>
+<p class="import-update" style="text-align: right;">As of <span></span>, <a href="javascript:void(0);">refresh</a> in <span></span></p>
+<div class="provisioning-users clearfix" style="margin-top: 2em;">
+</div>
+{% endblock %}
