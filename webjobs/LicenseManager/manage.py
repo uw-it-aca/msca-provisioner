@@ -1,9 +1,4 @@
 import sys
-import os
-import django
-from django.core.management import call_command
-
-management_command = 'process_subscriptions'
 
 package_paths = [
     r'D:\home\site\wwwroot\env\Lib\site-packages',
@@ -12,6 +7,12 @@ package_paths = [
 
 for path in package_paths:
     sys.path.append(path)
+
+import os
+import django
+from django.core.management import call_command
+
+management_command = 'process_subscriptions'
 
 os.environ.setdefault(
         "DJANGO_SETTINGS_MODULE",
