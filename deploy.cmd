@@ -157,6 +157,27 @@ popd
 :postPython
 
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+:: WebJob Deployment
+:: Based on https://github.com/projectkudu/kudu/wiki/Web-jobs
+:: ----------
+
+:WebJobDeployment
+echo Handling WebJob deployment.
+
+pushd "%DEPLOYMENT_SOURCE%\webjobs"
+
+FOR /D %%G in (*) DO (
+    echo Deploying webjob %%G
+    SET JOBDIR="%DEPLOYMENT_TARGET%\App_Data\Jobs\Continuous\%%G"
+    IF NOT EXIST "%JOBDIR%" MKDIR "%JOBDIR%"
+    XCOPY /Q /Y /R "%%G" "%JOBDIR%"
+)
+
+popd
+
+
+
+::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 :: Post deployment stub
 IF DEFINED POST_DEPLOYMENT_ACTION call "%POST_DEPLOYMENT_ACTION%"
