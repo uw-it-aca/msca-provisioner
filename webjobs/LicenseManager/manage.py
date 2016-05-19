@@ -1,4 +1,4 @@
-execfile('D:/home/site/wwwroot/env/Scripts/activate_this.py', dict(file='D:/home/site/wwwroot/env/Scripts/activate_this.py'))
+execfile('D:/home/site/wwwroot/env/Scripts/activate_this.py', dict(__file__='D:/home/site/wwwroot/env/Scripts/activate_this.py'))
 
 import os
 import django
