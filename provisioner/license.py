@@ -13,7 +13,7 @@ logger = getLogger(__name__)
 
 class License(Resolve):
     def process(self):
-        limit = getattr(settings, 'O365_ACTIVATE_PROCESS_LIMIT', 100)
+        limit = settings.O365_ACTIVATE_PROCESS_LIMIT['process']['default']
         activate = Subscription.objects.filter(
             state=Subscription.STATE_ACTIVATE
             in_process__isnull=True)[:limit]

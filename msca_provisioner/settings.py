@@ -253,7 +253,15 @@ O365_TEST_LICENSE_MAP = {
 }
 
 O365_LICENSE_MAP = os.environ['LICENSE_MAP']
-O365_ACTIVATE_PROCESS_LIMIT = 500
+
+O365_LIMITS = {
+    'process' : {
+        'default': 250
+    },
+    'monitor' : {
+        'default': 250
+    }
+}
 
 RESTCLIENTS_CA_BUNDLE = os.environ['CA_BUNDLE']
 RESTCLIENTS_TIMEOUT = None

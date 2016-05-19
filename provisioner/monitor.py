@@ -6,9 +6,10 @@ from restclients.models.uwnetid import Subscription as NWSSubscription
 
 class Monitor(Resolve):
     def confirm_activation(self):
+        limit = settings.O365_ACTIVATE_PROCESS_LIMIT['monitor']['default']
         subscriptions = Subscription.objects.filter(
             state=Subscription.STATE_ACTIVATING,
-            in_process__isnull=True)
+            in_process__isnull=True)[:limit]
         subscriptions.update(in_process=True)
         for sub in subscriptions:
             if self.has_subscription_licensing(sub):
@@ -30,9 +31,10 @@ class Monitor(Resolve):
             sub.save()
 
     def confirm_deactivation(self):
+        limit = settings.O365_ACTIVATE_PROCESS_LIMIT['monitor']['default']
         subscriptions = Subscription.objects.filter(
             state=Subscription.STATE_ACTIVATING,
-            in_process__isnull=True)
+            in_process__isnull=True)[:limit]
         subscriptions.update(in_process=True)
         for sub in subscriptions:
             if not self.has_subscription_licensing(sub):
