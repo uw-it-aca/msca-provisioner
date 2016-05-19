@@ -1,7 +1,9 @@
+@ECHO OFF
 :: Script to launch license manager in the site virtual environment
 
 :: Activate virtual environment
 D:\home\site\wwwroot\env\Scripts\activate.bat
 
+ECHO Launching License Manager>CON
 :: Start Processing Subscriptions
-D:\home\site\wwwroot\App_Data\Jobs\Continuous\LicenseManager\manage.py
+%WEBJOBS_PATH%\manage.py
