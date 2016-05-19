@@ -169,6 +169,7 @@ pushd "%DEPLOYMENT_SOURCE%\webjobs"
 FOR /D %%G in (*) DO (
     echo Deploying webjob "%%G" to "%DEPLOYMENT_TARGET%\App_Data\Jobs\Continuous\%%G"
     IF NOT EXIST %DEPLOYMENT_TARGET%\App_Data\Jobs\Continuous\%%G MKDIR "%DEPLOYMENT_TARGET%\App_Data\Jobs\Continuous\%%G"
+    DEL /F /Q "%DEPLOYMENT_TARGET%\App_Data\Jobs\Continuous\%%G\*"
     XCOPY /Q /Y /R "%%G" "%DEPLOYMENT_TARGET%\App_Data\Jobs\Continuous\%%G"
 )
 
