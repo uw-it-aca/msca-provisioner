@@ -13,11 +13,12 @@ logger = getLogger(__name__)
 
 class License(Resolve):
     def process(self):
-        limit = settings.O365_ACTIVATE_PROCESS_LIMIT['process']['default']
+        limit = settings.O365_LIMITS['process']['default']
         activate = Subscription.objects.filter(
             state=Subscription.STATE_ACTIVATE,
             in_process__isnull=True)[:limit]
-        activate.update(in_process=True)
+        pks = activate.values_list('pk', flat=True)
+        Subscription.objects.filter(pk__in=list(pks)).update(in_process=True)
         for activating in activate:
             try:
                 subscriptions = get_netid_subscriptions(
@@ -30,7 +31,7 @@ class License(Resolve):
                     activating.save()
                     continue
                 else:
-                    activate.update(in_process=null)
+                    Subscription.objects.filter(pk__in=list(pks)).update(in_process=null)
                     raise
 
             for sub in subscriptions:

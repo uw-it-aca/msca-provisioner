@@ -2,7 +2,6 @@ from django.core.management.base import BaseCommand, CommandError
 from django.utils.timezone import utc
 from provisioner.models import Job
 import datetime
-import sys
 
 
 class ProvisionerCommand(BaseCommand):
@@ -10,10 +9,13 @@ class ProvisionerCommand(BaseCommand):
         super(ProvisionerCommand, self).__init__(*args, **kwargs)
 
         if not self.is_active_job():
-            sys.exit(0)
+            self.handle = self.not_handled
+
+    def not_handled(self, *args, **options):
+        return
 
     def is_active_job(self):
-        name = self.name_from_argv()
+        name = self.name_from_module()
         try:
             job = Job.objects.get(name=name)
         except Job.DoesNotExist:
@@ -26,15 +28,12 @@ class ProvisionerCommand(BaseCommand):
         return True if job.is_active else False
 
     def update_job(self):
-        job = Job.objects.get(name=self.name_from_argv())
+        job = Job.objects.get(name=self.name_from_module())
         job.last_run_date = datetime.datetime.utcnow().replace(tzinfo=utc)
         job.save()
 
-    def name_from_argv(self):
-        name = sys.argv[1]
-        args = sys.argv[2:]
-        if len(args):
-            name += ':' + ':'.join(args).replace('--', '')
+    def name_from_module(self):
+        name = self.__module__.split('.')[-1]
         return name
 
     def title_from_name(self, name):

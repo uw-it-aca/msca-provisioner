@@ -1,3 +1,4 @@
+from django.conf import settings
 from provisioner.models import Subscription
 from provisioner.resolve import Resolve
 from restclients.uwnetid.subscription import modify_subscription_status
@@ -6,11 +7,13 @@ from restclients.models.uwnetid import Subscription as NWSSubscription
 
 class Monitor(Resolve):
     def confirm_activation(self):
-        limit = settings.O365_ACTIVATE_PROCESS_LIMIT['monitor']['default']
+        limit = settings.O365_LIMITS['monitor']['default']
         subscriptions = Subscription.objects.filter(
             state=Subscription.STATE_ACTIVATING,
             in_process__isnull=True)[:limit]
-        subscriptions.update(in_process=True)
+
+        pks = subscriptions.values_list('pk', flat=True)
+        Subscription.objects.filter(pk__in=list(pks)).update(in_process=True)
         for sub in subscriptions:
             if self.has_subscription_licensing(sub):
                 try:
@@ -24,18 +27,19 @@ class Monitor(Resolve):
                     sub.state = Subscription.STATE_ACTIVE
                     sub.save()
                 except:
-                    subscriptions.update(in_process=null)
+                    Subscription.objects.filter(pk__in=list(pks)).update(in_process=null)
                     raise
 
             sub.in_process=null
             sub.save()
 
     def confirm_deactivation(self):
-        limit = settings.O365_ACTIVATE_PROCESS_LIMIT['monitor']['default']
+        limit = settings.O365_LIMITS['monitor']['default']
         subscriptions = Subscription.objects.filter(
             state=Subscription.STATE_ACTIVATING,
             in_process__isnull=True)[:limit]
-        subscriptions.update(in_process=True)
+        pks = subscriptions.values_list('pk', flat=True)
+        Subscription.objects.filter(pk__in=list(pks)).update(in_process=True)
         for sub in subscriptions:
             if not self.has_subscription_licensing(sub):
                 try:
@@ -49,7 +53,7 @@ class Monitor(Resolve):
                     sub.state = Subscription.STATE_DELETED
                     sub.save()
                 except:
-                    subscriptions.update(in_process=null)
+                    Subscription.objects.filter(pk__in=list(pks)).update(in_process=null)
                     raise
 
             sub.in_process=null
