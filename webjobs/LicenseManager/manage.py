@@ -14,11 +14,9 @@ import os
 import django
 from django.core.management import call_command
 
-management_command = 'process_subscriptions'
-
 os.environ.setdefault(
         "DJANGO_SETTINGS_MODULE",
         "msca_provisioner.settings")
 
 django.setup()
-call_command(management_command)
+call_command('process_subscriptions')

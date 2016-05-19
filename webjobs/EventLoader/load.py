@@ -15,8 +15,6 @@ import time
 import django
 from django.core.management import call_command
 
-management_command = 'load_subscriptions'
-
 os.environ.setdefault(
         "DJANGO_SETTINGS_MODULE",
         "msca_provisioner.settings")
@@ -25,7 +23,7 @@ django.setup()
 while True:
     in_time = int(time.time())
 
-    call_command(management_command)
+    call_command('load_subscriptions')
 
     run_time = int(time.time()) - in_time
     if run_time < 3:
