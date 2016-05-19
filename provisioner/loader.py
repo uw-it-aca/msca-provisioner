@@ -15,5 +15,5 @@ class Loader(object):
             Gather(settings.AWS_SQS.get('SUBSCRIPTION'),
                    Subscription,
                    SubscriptionException).gather_events()
-        except GatherException as eex:
+        except GatherException as ex:
             self._log.error('Subscription Event Loader: %s' % (ex))
