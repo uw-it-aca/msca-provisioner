@@ -15,7 +15,7 @@ class License(Resolve):
     def process(self):
         limit = settings.O365_ACTIVATE_PROCESS_LIMIT['process']['default']
         activate = Subscription.objects.filter(
-            state=Subscription.STATE_ACTIVATE
+            state=Subscription.STATE_ACTIVATE,
             in_process__isnull=True)[:limit]
         activate.update(in_process=True)
         for activating in activate:
