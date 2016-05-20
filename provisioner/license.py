@@ -25,7 +25,7 @@ class License(Resolve):
                     activating.net_id, [activating.subscription])
                 # remember name for later
                 SubscriptionCode.objects.update_or_create(
-                    subscriptions.subscription_code
+                    subscriptions.subscription_code,
                     subscriptions.subscription_name)
             except DataFailureException as ex:
                 if ex.status == 404:
