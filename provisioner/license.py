@@ -2,7 +2,7 @@ from django.conf import settings
 from restclients.exceptions import DataFailureException
 from restclients.uwnetid.subscription import get_netid_subscriptions
 from restclients.models.uwnetid import Subscription as NWSSubscription
-from provisioner.models import Subscription
+from provisioner.models import Subscription, SubscriptionCode
 from provisioner.resolve import Resolve
 from provisioner.exceptions import MSCAProvisionerException
 from logging import getLogger
@@ -23,6 +23,10 @@ class License(Resolve):
             try:
                 subscriptions = get_netid_subscriptions(
                     activating.net_id, [activating.subscription])
+                # remember name for later
+                SubscriptionCode.objects.update_or_create(
+                    subscriptions.subscription_code
+                    subscriptions.subscription_name)
             except DataFailureException as ex:
                 if ex.status == 404:
                     logger.warning('Subscription %s for netid %s does not exist' % (

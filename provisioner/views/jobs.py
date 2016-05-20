@@ -18,6 +18,9 @@ class JobView(RESTDispatch):
         self._log = getLogger(__name__)
 
     def GET(self, request, **kwargs):
+        if not self.is_admin():
+            return self.json_response('{"error":"Unauthorized"}', status=401)
+
         job_id = kwargs['job_id']
         try:
             job = Job.objects.get(id=job_id)
@@ -72,6 +75,9 @@ class JobListView(RESTDispatch):
     """ Retrieves a list of Jobs.
     """
     def GET(self, request, **kwargs):
+        if not self.is_admin():
+            return self.json_response('{"error":"Unauthorized"}', status=401)
+
         read_only = False if self.can_manage_jobs() else True
         jobs = []
         for job in Job.objects.all().order_by('title'):

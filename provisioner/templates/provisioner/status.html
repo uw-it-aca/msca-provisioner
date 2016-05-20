@@ -17,8 +17,24 @@
     </div>
 </div>
 
-<h3>Provisioning Users <span id="provision-count" class="badge">0</span></h3>
-<p class="import-update" style="text-align: right;">As of <span></span>, <a href="javascript:void(0);">refresh</a> in <span></span></p>
-<div class="provisioning-users clearfix" style="margin-top: 2em;">
+<h3>Provisioning Users <span id="user-count" class="badge">0</span></h3>
+<p class="subscription-update pull-right">As of <span></span>, <a href="javascript:void(0);">refresh</a> in <span></span></p>
+<div class="subscriptions pull-left">
+    <div class="query-tabs clearfix">
+      <table id="subscription-table" class="admin-table table table-striped">
+        <thead>
+          <tr>
+            <th>Net Id</th>
+            <th>Subscription</th>
+            <th>State</th>
+            <th>Modified</th>
+            <th>In Process</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
 </div>
+
+{% include "handlebars/provisioner/subscription_table_row.html" %}
 {% endblock %}

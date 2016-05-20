@@ -8,15 +8,20 @@ class RESTDispatch(object):
     """ Handles passing on the request to the correct view method
         based on the request type.
     """
+    def is_admin(self):
+        actual_user = UserService().get_original_user()
+        return (self._user_in_group(actual_user,
+                                    settings.MSCA_MANAGER_SUPPORT_GROUP) or
+                self._user_in_group(actual_user,
+                                    settings.MSCA_MANAGER_ADMIN_GROUP))
+
     def can_manage_jobs(self):
-        #debug
-        #return True
-        user_service = UserService()
-        actual_user = user_service.get_original_user()
-        g = Group()
-        is_admin = g.is_member_of_group(actual_user,
-                                        settings.MSCA_MANAGER_ADMIN_GROUP)
-        return is_admin
+        actual_user = UserService().get_original_user()
+        return self._user_in_group(actual_user,
+                                   settings.MSCA_MANAGER_ADMIN_GROUP)
+
+    def _user_in_group(self, user, group):
+        return (len(user) > 0 and Group().is_member_of_group(user, group))
 
     def run(self, *args, **named_args):
         request = args[0]

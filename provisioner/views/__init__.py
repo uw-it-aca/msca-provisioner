@@ -24,7 +24,7 @@ def _admin(request, template):
 
     params = {
         'EVENT_UPDATE_FREQ': settings.ADMIN_EVENT_GRAPH_FREQ,
-        'IMPORT_UPDATE_FREQ': settings.ADMIN_IMPORT_STATUS_FREQ,
+        'SUBSCRIPTION_UPDATE_FREQ': settings.ADMIN_SUBSCRIPTION_STATUS_FREQ,
         'admin_group': settings.MSCA_MANAGER_ADMIN_GROUP,
     }
     return render_to_response(template, params, RequestContext(request))

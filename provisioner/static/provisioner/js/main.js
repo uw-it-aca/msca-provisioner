@@ -1,7 +1,7 @@
 /* msca provisioner admin desktop javascript */
 
 /*jslint browser: true, plusplus: true, regexp: true */
-/*global $, jQuery, Handlebars, Highcharts, moment, alert, confirm, startImportMonitoring, stopImportMonitoring */
+/*global $, jQuery, Handlebars, Highcharts, moment, alert, confirm, startSubscriptionMonitoring, stopSubscriptionMonitoring */
 
 
 "use strict";
@@ -42,35 +42,36 @@ $(document).ready(function () {
         return moment(dt).format("h:mm:ss a");
     }
 
-    function importMonitor() {
+    function subscriptionMonitor() {
         var state = window.provisioner;
 
-        if (state.hasOwnProperty('importCountdownId') && state.importCountdownId) {
-            clearInterval(state.importCountdownId);
+        updateProvisioningStatus();
+        if (state.hasOwnProperty('subscriptionCountdownId') && state.subscriptionCountdownId) {
+            clearInterval(state.subscriptionCountdownId);
         }
 
-        state.importCountdown = window.provisioner.import_update_frequency;
-        state.importCountdownId = setInterval(function () {
-            state.importCountdown -= 1;
-            if (state.importCountdown >= 0) {
-                $('p.import-update > span + a + span').html(state.importCountdown);
+        state.subscriptionCountdown = window.provisioner.subscription_update_frequency;
+        state.subscriptionCountdownId = setInterval(function () {
+            state.subscriptionCountdown -= 1;
+            if (state.subscriptionCountdown >= 0) {
+                $('.subscription-update > span + a + span').html(state.subscriptionCountdown);
             }
         }, 1000);
     }
 
-    function startImportMonitoring() {
+    function startSubscriptionMonitoring() {
         var state = window.provisioner;
 
-        importMonitor();
-        state.importTimerId = setInterval(importMonitor,
-                                          state.import_update_frequency * 1000);
+        subscriptionMonitor();
+        state.subscriptionTimerId = setInterval(subscriptionMonitor,
+                                                state.subscription_update_frequency * 1000);
     }
 
-    function stopImportMonitoring() {
+    function stopSubscriptionMonitoring() {
         var state = window.provisioner;
 
-        if (state.hasOwnProperty('importTimerId') && state.importTimerId) {
-            clearInterval(state.importTimerId);
+        if (state.hasOwnProperty('subscriptionTimerId') && state.subscriptionTimerId) {
+            clearInterval(state.subscriptionTimerId);
         }
     }
 
@@ -171,6 +172,79 @@ $(document).ready(function () {
         });
     }
 
+    function initProvisioningStatus() {
+        $('#subscription-table').dataTable({
+            'aaSorting': [[ 0, 'asc' ]],
+            'bPaginate': false,
+            'bInfo': false,
+            'searching': false,
+			'bScrollCollapse': true
+        });
+    }
+
+    function updateProvisioningStatus() {
+        var table_api = $('#subscription-table').dataTable().api();
+
+        table_api.clear().draw();
+        $('.dataTables_empty').addClass('waiting');
+        $.ajax({
+            url: '/provisioner/api/v1/subscriptions',
+            dataType: 'json',
+            success: function (data) {
+                var tpl = Handlebars.compile($('#subscription-table-row').html()),
+                    context = {
+                        user_count: (data.hasOwnProperty('subscriptions')) ? data.subscriptions.length : 0,
+                        subscriptions: []
+                    };
+
+                if (context.user_count > 0) {
+                    $.each(data.subscriptions, function (i) {
+                        var sub = this,
+                            html = tpl({
+                                'subscription_id': sub.subscription_id,
+                                'net_id': sub.net_id,
+                                'subscription': sub.subscription,
+                                'subscription_name': sub.subscription_name,
+                                'state': sub.state,
+                                'modified_date': format_date(sub.modified_date),
+                                'modified_date_relative': format_relative_date(sub.modified_date),
+                                'in_process': sub.in_process
+                            });
+
+                        table_api.row.add($(html));
+                    });
+
+                    table_api.draw();
+
+                    $('#user-count').show();
+                    $('#user-count').html(context.user_count);
+                } else {
+                    $('#user-count').hide();
+                }
+
+
+                $('.provisioner-list').parent().removeClass('waiting');
+                $('.provisioner-list').html(tpl(context));
+
+                $('.subscription-update > span:first').html(format_hms_date());
+                $('.subscription-update > span + a + span').html(window.provisioner.subscription_update_frequency);
+            },
+            error: function (xhr) {
+                var json, msg;
+                try {
+                    json = $.parseJSON(xhr.responseText);
+                    msg = 'Subscription service error: ' + json.error;
+                } catch (e) {
+                    msg = 'Problem getting subscription list from server';
+                }
+
+                $('.dataTables_empty')
+                    .removeClass('waiting')
+                    .addClass('')
+                    .html(msg);
+            }
+        });
+    }
 
     // event frequency chart
     function initializeStripAndGauge(event_type) {
@@ -208,7 +282,6 @@ $(document).ready(function () {
                     center: ['50%', '150%'],
                     size: 400
                 }],
-
                 yAxis: [{
                     type: 'logarithmic',
                     min: 1,
@@ -258,14 +331,14 @@ $(document).ready(function () {
                 },
                 series: [{
                     name: 'per hour',
-                    data: [0],
+                    data: [1],
                     yAxis: 0,
                     dial: {
                         backgroundColor: '#000000'
                     }
                 }, {
                     name: 'per hour (over 6 hours)',
-                    data: [0],
+                    data: [1],
                     yAxis: 0,
                     dial: {
                         backgroundColor: '#00CC00'
@@ -295,8 +368,8 @@ $(document).ready(function () {
                     }
                 }
 
-                gauge.series[0].setData([last_hour], true);
-                gauge.series[1].setData([Math.ceil(avg_hours / hours_to_avg)], true);
+                gauge.series[0].setData([(last_hour) ? last_hour : 1], true);
+                gauge.series[1].setData((avg_hours) ? [Math.ceil(avg_hours / hours_to_avg)] : 1, true);
                 gauge.redraw();
             },
             chart = new Highcharts.Chart({
@@ -511,17 +584,16 @@ $(document).ready(function () {
             }
         });
 
-        if ($('.import-health').length) {
-            $('p.import-update > span + a').on('click', function () {
-                stopImportMonitoring();
-                startImportMonitoring();
-            });
-        }
+        $('.subscription-update > span + a').on('click', function () {
+            stopSubscriptionMonitoring();
+            startSubscriptionMonitoring();
+        });
     }
 
     if ($('.event-freq').length) {
         initializeStripAndGauge('subscription');
-        startImportMonitoring();
+        initProvisioningStatus();
+        startSubscriptionMonitoring();
     } else if ($('#jobs-table').length) {
         loadJobs();
     }

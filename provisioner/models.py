@@ -3,24 +3,6 @@ from django.utils.timezone import utc, localtime
 
 
 class Subscription(models.Model):
-    ACTION_SHOW = "show"
-    ACTION_ACTIVATE = "activate"
-    ACTION_DEACTIVATE = "deactivate"
-    ACTION_MODIFY = "modify"
-    ACTION_SETNAME = "setname"
-    ACTION_DISUSER = "disuser"
-    ACTION_REUSER = "reuser"
-
-    ACTION_CHOICES = (
-        (ACTION_SHOW, "Show"),
-        (ACTION_ACTIVATE, "Activate"),
-        (ACTION_DEACTIVATE, "Deactivate"),
-        (ACTION_MODIFY, "Modify"),
-        (ACTION_SETNAME, "Setname"),
-        (ACTION_DISUSER, "Disuser"),
-        (ACTION_REUSER, "Reuser"),
-    )
-
     STATE_ACTIVATE = "activate"
     STATE_ACTIVATING = "activating"
     STATE_ACTIVE = "active"
@@ -48,6 +30,22 @@ class Subscription(models.Model):
     state = models.CharField(max_length=16, choices=STATE_CHOICES)
     modified_date = models.DateTimeField(auto_now=True)
     in_process = models.NullBooleanField()
+
+    def json_data(self):
+        return {
+            'subscription_id': self.pk,
+            'net_id': self.net_id,
+            'subscription': self.subscription,
+            'state': self.state,
+            'modified_date': localtime(self.modified_date).isoformat() if (
+                self.modified_date is not None) else None,
+            'in_process': self.in_process
+        }
+
+
+class SubscriptionCode(models.Model):
+    code = models.SmallIntegerField(default=0)
+    name = models.CharField(max_length=128)
 
 
 class Job(models.Model):

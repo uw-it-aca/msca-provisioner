@@ -95,8 +95,13 @@ class Resolve(object):
                     netid, add=add, remove=remove)
                 return True
             except DataFailureException as ex:
+                err_msg = str(ex)
                 try:
-                    if ex.status == 400:
+                    if ex.status == 404:
+                        odata = json_loads(ex.msg)['odata.error']
+                        err_msg = odata['message']['value']
+                        ## TODO? deleted user cleanup
+                    elif ex.status == 400:
                         odata = json_loads(ex.msg)['odata.error']
                         code = odata['code']
                         msg = odata['message']['value']
@@ -112,6 +117,6 @@ class Resolve(object):
 
                 raise MSCAProvisionerException(
                     'License Fail: netid %s: add %s: remove %s: %s' % (
-                        netid, add, remove, ex))
+                        netid, add, remove, err_msg))
 
         return False

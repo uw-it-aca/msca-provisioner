@@ -12,7 +12,8 @@ https://docs.djangoproject.com/en/1.7/ref/settings/
 import os
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
-MSCA_MANAGER_ADMIN_GROUP = 'u_acadev_msca_support'
+MSCA_MANAGER_SUPPORT_GROUP = 'u_acadev_msca_support'
+MSCA_MANAGER_ADMIN_GROUP = MSCA_MANAGER_SUPPORT_GROUP
 RESTCLIENTS_ADMIN_GROUP = MSCA_MANAGER_ADMIN_GROUP
 USERSERVICE_ADMIN_GROUP = MSCA_MANAGER_ADMIN_GROUP
 
@@ -286,4 +287,4 @@ AWS_SQS = {
 
 # admin app settings
 ADMIN_EVENT_GRAPH_FREQ = 10
-ADMIN_IMPORT_STATUS_FREQ = 30
+ADMIN_SUBSCRIPTION_STATUS_FREQ = 30
