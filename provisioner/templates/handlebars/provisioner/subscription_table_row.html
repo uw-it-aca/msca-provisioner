@@ -1,0 +1,10 @@
+{% load templatetag_handlebars %}
+{% tplhandlebars "subscription-table-row" %}
+<tr>
+    <td>{{ net_id }}</td>
+    <td>{{ subscription }} - {{ subscription_name }}</td>
+    <td>{{ state }}</td>
+    <td>{{# if modified_date}}{{ modified_date }} ({{ modified_date_relative }}){{else}}Never{{/if}}</td>
+    <td>{{# if in_process }}Working{{/if}}</td>
+</tr>
+{% endtplhandlebars %}
