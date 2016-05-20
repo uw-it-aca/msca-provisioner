@@ -144,6 +144,7 @@ $(document).ready(function () {
                             changed_by: job.changed_by,
                             changed_date: job.changed_date ? format_date(job.changed_date) : null,
                             last_run_date: job.last_run_date ? format_date(job.last_run_date) : null,
+                            last_run_relative: job.last_run_date ? format_relative_date(job.last_run_date) : null,
                             read_only: job.read_only
                         });
                     });

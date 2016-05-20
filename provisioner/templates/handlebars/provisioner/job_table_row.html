@@ -3,8 +3,9 @@
 {{# each jobs}}
 <tr>
     <td>{{ title }}</td>
-    <td>{{# if last_run_date}}{{ last_run_date }}{{else}}Never{{/if}}</td>
-    <td>{{ changed_date }}{{# if changed_by}} ({{ changed_by }}){{/if}}</td>
+    <td>{{# if last_run_date}}{{ last_run_date }} ({{ last_run_relative }}){{else}}Never{{/if}}</td>
+    <td>{{ changed_date }}</td>
+    <td>{{ changed_by }}</td>
     <td>{{# if read_only}}<h4>{{# if is_active}}<span class="label label-success">Enabled</span>{{else}}<span class="label label-default">Disabled</span>{{/if}}</h4>{{else}}<input type="checkbox" class="toggle-job" data-job-id="{{ job_id }}" {{# if is_active}}checked="checked" {{/if}}data-toggle="toggle" data-onstyle="success" data-on="Enabled" data-off="Disabled"/> <button type="button" class="btn btn-danger delete-job" data-job-id="{{ job_id }}" title="Delete this job"><span class="glyphicon glyphicon-remove-circle" aria-hidden="true"></span> Delete</button>{{/if}}</td>
 </tr>
 {{/each}}
