@@ -85,9 +85,11 @@ $(document).ready(function () {
             data: '{"job": {"is_active": ' + $(this).is(':checked') + '}}',
             success: function (data) {
 		        if (data.hasOwnProperty('job')) {
-		            input.closest('td').prev()
-                         .html(format_date(data.job.changed_date) +
-                               ' (' + data.job.changed_by + ')');
+		            input.closest('td')
+                        .prev()
+                        .html(data.job.changed_by)
+                        .prev()
+                        .html(format_date(data.job.changed_date));
 		        }
             },
             error: function (xhr) {
