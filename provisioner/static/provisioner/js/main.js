@@ -181,7 +181,10 @@ $(document).ready(function () {
             'bPaginate': false,
             'bInfo': false,
             'searching': false,
-			'bScrollCollapse': true
+			'bScrollCollapse': true,
+            'language': {
+                'emptyTable': 'No users currently being provisioned.'
+            }
         });
     }
 
@@ -224,7 +227,6 @@ $(document).ready(function () {
                     $('#user-count').html(context.user_count);
                 } else {
                     $('#user-count').hide();
-                    $('.dataTables_empty').html('No users currently being provisioned.');
                 }
             },
             error: function (xhr) {
