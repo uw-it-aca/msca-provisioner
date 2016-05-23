@@ -146,6 +146,7 @@ STATIC_ROOT = os.path.join(PROJECT_ROOT, 'static').replace('\\','/')
 
 from socket import gethostname
 # Logging
+LOG_LEVEL = 'INFO'
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -170,25 +171,25 @@ LOGGING = {
         'django.db.backends': {
             'handlers':['file'],
             'propagate': False,
-            'level':'INFO',
+            'level': LOG_LEVEL
         },
         'django': {
             'handlers':['file'],
             'propagate': True,
-            'level':'INFO',
+            'level': LOG_LEVEL
         },
         'aws_message': {
             'handlers':['file'],
             'propagate': True,
-            'level':'INFO',
+            'level': LOG_LEVEL
         },
         'provisioner': {
             'handlers': ['file'],
-            'level': 'INFO',
+            'level': LOG_LEVEL
         },
         'events': {
             'handlers': ['file'],
-            'level': 'INFO',
+            'level': LOG_LEVEL
         },
     }
 }
@@ -222,38 +223,39 @@ RESTCLIENTS_O365_CLIENT_SECRET=os.environ['O365_CLIENT_SECRET']
 # Each subscription code is a dictionary of license SKU Part
 # Numbers that contain a list of disabled service plans within
 # the license.
-O365_PRODUCTION_LICENSE_MAP = {
-    233: {   # UW Office 365 Education'
-        'STANDARDWOFFPACK_FACULTY': []
+O365_LICENSES = {
+    'O365_TEST_LICENSE_MAP': {
+        234: {   # UW Office 365 Education (Dogfood)'
+            'STANDARDWOFFPACK_IW_FACULTY': []
+            #'STANDARDWOFFPACK_FACULTY': []
+        },
+        236 : {  # UW Office 365 ProPlus (Dogfood)'
+            'OFFICESUBSCRIPTION_FACULTY': []
+        },
+        238: {   # UW Project Server Online user access (Dogfood)'
+            'PROJECTONLINE_PLAN_1_FACULTY': []
+        },
+        240: {   # UW Power BI (Dogfood)'
+            'POWER_BI_STANDARD': []
+        }
     },
-    235: {   # UW Office 365 ProPlus'
-        'OFFICESUBSCRIPTION_FACULTY': []
-    },
-    237: {   # UW Project Server Online user access'
-        'PROJECTONLINE_PLAN_1_FACULTY': []
-    },
-    239: {   # UW Power BI'
-        'POWER_BI_STANDARD': []
+    'O365_PRODUCTION_LICENSE_MAP': {
+        233: {   # UW Office 365 Education'
+            'STANDARDWOFFPACK_FACULTY': []
+        },
+        235: {   # UW Office 365 ProPlus'
+            'OFFICESUBSCRIPTION_FACULTY': []
+        },
+        237: {   # UW Project Server Online user access'
+            'PROJECTONLINE_PLAN_1_FACULTY': []
+        },
+        239: {   # UW Power BI'
+            'POWER_BI_STANDARD': []
+        }
     }
 }
 
-O365_TEST_LICENSE_MAP = {
-    234: {   # UW Office 365 Education (Dogfood)'
-        'STANDARDWOFFPACK_IW_FACULTY': []
-        #'STANDARDWOFFPACK_FACULTY': []
-    },
-    236 : {  # UW Office 365 ProPlus (Dogfood)'
-        'OFFICESUBSCRIPTION_FACULTY': []
-    },
-    238: {   # UW Project Server Online user access (Dogfood)'
-        'PROJECTONLINE_PLAN_1_FACULTY': []
-    },
-    240: {   # UW Power BI (Dogfood)'
-        'POWER_BI_STANDARD': []
-    }
-}
-
-O365_LICENSE_MAP = os.environ['LICENSE_MAP']
+O365_LICENSE_MAP = O365_LICENSES[os.environ['LICENSE_MAP']]
 
 O365_LIMITS = {
     'process' : {
@@ -280,7 +282,7 @@ AWS_SQS = {
         'VALIDATE_MSG_SIGNATURE': True,
         'EVENT_COUNT_PRUNE_AFTER_DAY': 2,
         'PAYLOAD_SETTINGS': {
-            'SUBSCRIPTIONS': O365_LICENSE_MAP
+            'SUBSCRIPTIONS': O365_LICENSES[os.environ['LICENSE_MAP']]
         }
     }
 }

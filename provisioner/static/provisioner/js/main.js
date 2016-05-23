@@ -217,20 +217,15 @@ $(document).ready(function () {
                         table_api.row.add($(html));
                     });
 
-                    table_api.draw();
+                    $('.provisioner-list').html(tpl(context));
+                    table_api.clear().draw();
 
                     $('#user-count').show();
                     $('#user-count').html(context.user_count);
                 } else {
                     $('#user-count').hide();
+                    $('.dataTables_empty').html('No users currently being provisioned.');
                 }
-
-
-                $('.provisioner-list').parent().removeClass('waiting');
-                $('.provisioner-list').html(tpl(context));
-
-                $('.subscription-update > span:first').html(format_hms_date());
-                $('.subscription-update > span + a + span').html(window.provisioner.subscription_update_frequency);
             },
             error: function (xhr) {
                 var json, msg;
@@ -241,10 +236,12 @@ $(document).ready(function () {
                     msg = 'Problem getting subscription list from server';
                 }
 
-                $('.dataTables_empty')
-                    .removeClass('waiting')
-                    .addClass('')
-                    .html(msg);
+                $('.dataTables_empty').html(msg);
+            },
+            complete: function () {
+                $('.dataTables_empty').removeClass('waiting');
+                $('.subscription-update > span:first').html(format_hms_date());
+                $('.subscription-update > span + a + span').html(window.provisioner.subscription_update_frequency);
             }
         });
     }
