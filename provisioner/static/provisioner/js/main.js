@@ -194,7 +194,7 @@ $(document).ready(function () {
         table_api.clear().draw();
         $('.dataTables_empty').addClass('waiting');
         $.ajax({
-            url: '/provisioner/api/v1/subscriptions',
+            url: '/provisioner/api/v1/subscriptions?state=activate,activating,deleting',
             dataType: 'json',
             success: function (data) {
                 var tpl = Handlebars.compile($('#subscription-table-row').html()),

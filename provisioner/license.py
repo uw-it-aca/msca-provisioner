@@ -5,10 +5,6 @@ from restclients.models.uwnetid import Subscription as NWSSubscription
 from provisioner.models import Subscription, SubscriptionCode
 from provisioner.resolve import Resolve
 from provisioner.exceptions import MSCAProvisionerException
-from logging import getLogger
-
-
-logger = getLogger(__name__)
 
 
 class License(Resolve):
@@ -16,62 +12,60 @@ class License(Resolve):
         limit = settings.O365_LIMITS['process']['default']
         activate = Subscription.objects.filter(
             state=Subscription.STATE_ACTIVATE,
-            in_process__isnull=True)[:limit]
-        pks = activate.values_list('pk', flat=True)
-        Subscription.objects.filter(pk__in=list(pks)).update(in_process=True)
-        for activating in activate:
+            in_process__isnull=True).values_list('pk', flat=True)[:limit]
+
+        Subscription.objects.filter(pk__in=list(activate)).update(in_process=True)
+
+        for activating_pk in activate:
             try:
+                activating = Subscription.objects.get(pk=activating_pk)
                 subscriptions = get_netid_subscriptions(
                     activating.net_id, [activating.subscription])
+
                 # remember name for later
-                SubscriptionCode.objects.update_or_create(
-                    name=subscriptions.subscription_code,
-                    code=subscriptions.subscription_name)
+                for sub_model in subscriptions:
+                    SubscriptionCode.objects.update_or_create(
+                        name=sub_model.subscription_name,
+                        code=sub_model.subscription_code)
             except DataFailureException as ex:
                 if ex.status == 404:
-                    logger.warning('Subscription %s for netid %s does not exist' % (
+                    self.log.warning('Subscription %s for netid %s does not exist' % (
                         activating.subscription, activating.net_id))
-                    activating.in_process = null
+                    activating.in_process = None
                     activating.save()
                     continue
                 else:
-                    Subscription.objects.filter(pk__in=list(pks)).update(in_process=null)
+                    Subscription.objects.filter(pk__in=list(activate)).update(in_process=None)
                     raise
 
             for sub in subscriptions:
                 try:
                     if sub.status_code == NWSSubscription.STATUS_PENDING:
+                        activating.state = Subscription.STATE_ACTIVATING
                         if self.add_subscription_licensing(activating):
-                            activating.state = Subscription.STATE_ACTIVATING
                             self.log.info(
                                 'Activating subscription %s for %s' % (
                                     activating.subscription,
                                     activating.net_id))
                         else:
-                            activating.state = Subscription.STATE_ACTIVE
                             self.log.info(
                                 'Subscription %s for %s already active' % (
                                     activating.subscription,
                                     activating.net_id))
-
-                        activating.save()
                     elif sub.status_code == NWSSubscription.STATUS_CANCELLING:
+                        activating.state = Subscription.STATE_DELETING
                         if self.remove_subscription_licensing(activating):
-                            activating.state = Subscription.STATE_DELETING
                             self.log.info(
                                 'Deactivating subscription %s for %s' % (
                                     activating.subscription,
                                     activating.net_id))
                         else:
-                            activating.state = Subscription.STATE_DELETED
                             self.log.info(
                                 'Subscription %s for %s already active' % (
                                     activating.subscription,
                                     activating.net_id))
-
-                        activating.save()
                 except MSCAProvisionerException as ex:
                     self.log.error("Subscribe: %s" % (ex))
 
-            activating.in_process = null
+            activating.in_process = None
             activating.save()

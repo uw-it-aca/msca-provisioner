@@ -56,9 +56,13 @@ class Resolve(object):
         """return what is left after removing what is assigned
            from what needs to be assigned
         """
-        to_assign = self.subscription_licensing(subscription)
         assigned = self.license_api.get_licenses_for_netid(
             subscription.net_id)
+
+        return self.licensing_to_assign_from_assigned(subscription, assigned)
+
+    def licensing_to_assign_from_assigned(self, subscription, assigned):
+        to_assign = self.subscription_licensing(subscription)
         for user_license in assigned:
             try:
                 for user_disabled in user_license.disabled_plans:
