@@ -1,5 +1,7 @@
 from django.core.management.base import BaseCommand, CommandError
-from provisioner.subscription import Subscription
+from provisioner.subscription import Subscription, \
+    Subscription404Exception, SubscriptionBusyException
+from json import loads as json_loads
 import sys
 
 
@@ -22,6 +24,10 @@ class Command(BaseCommand):
         try:
             sub = Subscription()
             for netid in options['netid']:
-                sub.reset(netid, options['subscription'])
+                try:
+                    sub.reset(netid, options['subscription'])
+                except (Subscription404Exception,
+                        SubscriptionBusyException) as err:
+                    print >> sys.stderr, "ERROR: %s: %s" % (netid, err)
         except Exception as err:
             raise CommandError('FAIL: %s' % (err))

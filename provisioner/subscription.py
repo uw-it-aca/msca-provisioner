@@ -6,6 +6,10 @@ from provisioner.resolve import Resolve
 from json import loads as json_loads
 
 
+class Subscription404Exception(Exception): pass
+class SubscriptionBusyException(Exception): pass
+
+
 class Subscription(Resolve):
     def reset(self, netid, subcode):
         try:
@@ -14,9 +18,10 @@ class Subscription(Resolve):
                     net_id=netid, subscription=subcode,
                     state=ProvisionSubscription.STATE_ACTIVE)
                 if sub.in_process:
-                    self.log.warning("Cannot reset: %s subcode %s in process" % (
-                        netid, subcode))
-                    return
+                    raise SubscriptionBusyException(
+                        "Cannot reset: %s subcode %s in process" % (
+                            netid, subcode))
+
             except ProvisionSubscription.DoesNotExist:
                 sub = ProvisionSubscription(
                     net_id=netid, subscription=subcode,
@@ -36,14 +41,13 @@ class Subscription(Resolve):
             self.log.info('reset: set subcode %s for %s %s' % (
                 subcode, netid, NWSSubscription.STATUS_PENDING))
         except DataFailureException as ex:
-            try:
-                if ex.status == 404:
+            if ex.status == 404:
+                try:
                     odata = json_loads(ex.msg)['odata.error']
                     err_msg = odata['message']['value']
-                    self.log.error('reset: %s (404): %s' % (netid, err_msg))
-                    return
-            except:
-                pass
+                except:
+                    err_msg = str(ex)
+
+                raise Subscription404Exception('%s' % (err_msg))
 
             raise ex
-
