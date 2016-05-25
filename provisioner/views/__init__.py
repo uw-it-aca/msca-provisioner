@@ -6,6 +6,7 @@ from django.http import HttpResponseRedirect
 from userservice.user import UserService
 from authz_group import Group
 from datetime import datetime
+import re
 
 
 def login(request):
@@ -17,6 +18,12 @@ def login(request):
 
 def _admin(request, template):
     user = UserService().get_original_user()
+
+    netid_match = re.match(
+        r'^([^@]+)(@(uw|washington|cac.washington|u.washington).edu)?$', user)
+    if netid_match:
+        user = netid_match.group(1)
+
     authz = Group()
     if not authz.is_member_of_group(user, settings.MSCA_MANAGER_ADMIN_GROUP):
         return HttpResponseRedirect("/login")
