@@ -2,6 +2,7 @@ from django.conf import settings
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.contrib.auth.decorators import login_required
+from django.http import HttpResponseRedirect
 from userservice.user import UserService
 from authz_group import Group
 from datetime import datetime

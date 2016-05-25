@@ -1,4 +1,3 @@
-from django.http import HttpResponseRedirect
 from logging import getLogger
 from provisioner.models import Job
 from provisioner.views.rest_dispatch import RESTDispatch
