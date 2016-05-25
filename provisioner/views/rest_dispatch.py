@@ -1,5 +1,6 @@
 from django.conf import settings
 from userservice.user import UserService
+from provisioner.views import Authorization
 from authz_group import Group
 from django.http import HttpResponse
 
@@ -8,13 +9,11 @@ class RESTDispatch(object):
     """ Handles passing on the request to the correct view method
         based on the request type.
     """
-    def can_manage_jobs(self):
-        actual_user = UserService().get_original_user()
-        return self._user_in_group(actual_user,
-                                   settings.MSCA_MANAGER_ADMIN_GROUP)
+    def can_request(self):
+        return Authorization().is_support() or self.can_manage_jobs()
 
-    def _user_in_group(self, user, group):
-        return (len(user) > 0 and Group().is_member_of_group(user, group))
+    def can_manage_jobs(self):
+        return Authorization().is_admin()
 
     def run(self, *args, **named_args):
         request = args[0]

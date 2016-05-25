@@ -9,26 +9,29 @@ from datetime import datetime
 import re
 
 
-def login(request):
-    params = {}
-    return render_to_response('provisioner/login.html',
-                              params,
-                              context_instance=RequestContext(request))
+class Authorization(object):
+    def _validate(self, group):
+        user_service = UserService()
+        authz = Group()
+        user = user_service.get_original_user()
+        uwnetid_match = re.match(
+            r'^([^@]+)(@(uw|washington|cac.washington|u.washington).edu)?$',
+            user)
+        if uwnetid_match:
+            return authz.is_member_of_group(
+                uwnetid_match.group(1), group)
 
-def user_is_admin():
-    user = UserService().get_original_user()
+        return authz.is_member_of_group(user, group)
 
-    netid_match = re.match(
-        r'^([^@]+)(@(uw|washington|cac.washington|u.washington).edu)?$', user)
-    if netid_match:
-        user = netid_match.group(1)
+    def is_admin(self):
+        return self._validate(settings.MSCA_MANAGER_ADMIN_GROUP)
 
-    authz = Group()
-    return authz.is_member_of_group(user, settings.MSCA_MANAGER_ADMIN_GROUP)
+    def is_support(self):
+        return self._validate(settings.MSCA_MANAGER_SUPPORT_GROUP)
 
 
 def _admin(request, template):
-    if not user_is_admin():
+    if not Authorization().is_support():
         return HttpResponseRedirect("/login")
 
     curr_date = datetime.now().date()
@@ -40,6 +43,12 @@ def _admin(request, template):
     }
     return render_to_response(template, params, RequestContext(request))
 
+
+def login(request):
+    params = {}
+    return render_to_response('provisioner/login.html',
+                              params,
+                              context_instance=RequestContext(request))
 
 @login_required
 def ProvisionStatus(request, template='provisioner/status.html'):
