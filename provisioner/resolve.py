@@ -17,16 +17,16 @@ class Resolve(object):
             (p.service_plan_name, p.service_plan_id)
             for p in s.service_plans))) for s in self.skus)
 
-    def subscription_licensing(self, subscription):
+    def subscription_licensing(self, subscription_code):
         """
         Given the subscription code, look up what Office 365 license
         should be applied
         """
         try:
-            license_map = settings.O365_LICENSE_MAP[subscription.subscription]
+            license_map = settings.O365_LICENSE_MAP[subscription_code]
         except KeyError:
             self.log.error('No license mapping for subscription %s' % (
-                subscription.subscription))
+                subscription_code))
             return
 
         licenses = {}
@@ -40,14 +40,14 @@ class Resolve(object):
                     else:
                         self.log.warning(
                             'Subcode %s: plan %s not part of %s' % (
-                                subscription.subscription, plan,
+                                subscription_code, plan,
                                 license_name))
 
                 licenses[self.licenses[license_name][0]] = disabled_plans
             else:
                 self.log.warning(
                     'Subcode %s: license %s not in tenant %s subscribed skus' % (
-                        subscription.subscription, license_name,
+                        subscription_code, license_name,
                         getattr(settings, 'RESTCLIENTS_O365_TENANT', 'test')))
 
         return licenses
@@ -59,19 +59,20 @@ class Resolve(object):
         assigned = self.license_api.get_licenses_for_netid(
             subscription.net_id)
 
-        return self.licensing_to_assign_from_assigned(subscription, assigned)
+        return self.licensing_to_assign_from_assigned(
+            subscription.subscription, assigned)
 
-    def licensing_to_assign_from_assigned(self, subscription, assigned):
-        to_assign = self.subscription_licensing(subscription)
-        for user_license in assigned:
-            try:
-                for user_disabled in user_license.disabled_plans:
-                    to_assign[user_license.sku_id].remove(user_disabled)
-
-                if len(to_assign[user_license.sku_id]) == 0:
-                    del to_assign[user_license.sku_id]
-            except ValueError, KeyError:
-                continue
+    def licensing_to_assign_from_assigned(self, subscription_code, assigned):
+        to_assign = {}
+        necessary = self.subscription_licensing(subscription_code)
+        for sku_id, disabled_plans in necessary.iteritems():
+            assigned_license = [l for l in assigned if sku_id == l.sku_id]
+            if len(assigned_license):
+                plans = [p for p in disabled_plans if p not in assigned_license[0].disabled_plans]
+                if len(plans):
+                    to_assign[sku_id] = plans
+            else:
+                to_assign[sku_id] = list(disabled_plans)
 
         return to_assign
 
@@ -83,7 +84,7 @@ class Resolve(object):
         return self.set_licensing(subscription.net_id, to_assign)
 
     def remove_subscription_licensing(self, subscription):
-        to_assign = self.subscription_licensing(subscription)
+        to_assign = self.subscription_licensing(subscription.subscription)
         remove = []
         for l in to_assign:
             remove.append(l)
