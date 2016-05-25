@@ -11,6 +11,7 @@ class Monitor(Resolve):
         subscriptions = Subscription.objects.filter(
             state=Subscription.STATE_ACTIVATING,
             in_process__isnull=True).values_list('pk', flat=True)[:limit]
+        self.log.debug('confirm activation: %s of %s in process' % (len(subscriptions), limit))
         Subscription.objects.filter(pk__in=list(subscriptions)).update(in_process=True)
         try:
             for sub_pk in subscriptions:
@@ -36,6 +37,7 @@ class Monitor(Resolve):
         subscriptions = Subscription.objects.filter(
             state=Subscription.STATE_DELETING,
             in_process__isnull=True).values_list('pk', flat=True)[:limit]
+        self.log.debug('confirm deactivation: %s of %s in process' % (len(subscriptions), limit))
         Subscription.objects.filter(pk__in=list(subscriptions)).update(in_process=True)
         try:
             for sub_pk in subscriptions:

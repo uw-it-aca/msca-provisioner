@@ -146,7 +146,7 @@ STATIC_ROOT = os.path.join(PROJECT_ROOT, 'static').replace('\\','/')
 
 from socket import gethostname
 # Logging
-LOG_LEVEL = 'INFO'
+LOG_LEVEL = 'DEBUG'
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,

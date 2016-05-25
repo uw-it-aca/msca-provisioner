@@ -13,6 +13,7 @@ class License(Resolve):
         activate = Subscription.objects.filter(
             state=Subscription.STATE_ACTIVATE,
             in_process__isnull=True).values_list('pk', flat=True)[:limit]
+        self.log.debug('process subscriptions: %s of %s in process' % (len(activate), limit))
         Subscription.objects.filter(pk__in=list(activate)).update(in_process=True)
         try:
             for activating_pk in activate:
