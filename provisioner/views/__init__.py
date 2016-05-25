@@ -15,8 +15,7 @@ def login(request):
                               params,
                               context_instance=RequestContext(request))
 
-
-def _admin(request, template):
+def user_is_admin():
     user = UserService().get_original_user()
 
     netid_match = re.match(
@@ -25,7 +24,11 @@ def _admin(request, template):
         user = netid_match.group(1)
 
     authz = Group()
-    if not authz.is_member_of_group(user, settings.MSCA_MANAGER_ADMIN_GROUP):
+    return authz.is_member_of_group(user, settings.MSCA_MANAGER_ADMIN_GROUP)
+
+
+def _admin(request, template):
+    if not user_is_admin():
         return HttpResponseRedirect("/login")
 
     curr_date = datetime.now().date()

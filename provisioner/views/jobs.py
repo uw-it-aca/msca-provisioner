@@ -1,6 +1,7 @@
 from logging import getLogger
 from provisioner.models import Job
 from provisioner.views.rest_dispatch import RESTDispatch
+from provisioner.views import user_is_admin
 from userservice.user import UserService
 from django.utils.timezone import utc
 from datetime import datetime
@@ -17,7 +18,7 @@ class JobView(RESTDispatch):
         self._log = getLogger(__name__)
 
     def GET(self, request, **kwargs):
-        if not self.is_admin():
+        if not user_is_admin():
             return self.json_response('{"error":"Unauthorized"}', status=401)
 
         job_id = kwargs['job_id']
@@ -74,7 +75,7 @@ class JobListView(RESTDispatch):
     """ Retrieves a list of Jobs.
     """
     def GET(self, request, **kwargs):
-        if not self.is_admin():
+        if not user_is_admin():
             return self.json_response('{"error":"Unauthorized"}', status=401)
 
         read_only = False if self.can_manage_jobs() else True

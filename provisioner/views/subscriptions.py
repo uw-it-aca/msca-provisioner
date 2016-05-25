@@ -1,5 +1,6 @@
 from provisioner.models import Subscription, SubscriptionCode
 from provisioner.views.rest_dispatch import RESTDispatch
+from provisioner.views import user_is_admin
 from django.db.models import Q
 import json
 
@@ -8,7 +9,7 @@ class SubscriptionListView(RESTDispatch):
     """ Retrieves a list of Subscriptions.
     """
     def GET(self, request, **kwargs):
-        if not self.is_admin():
+        if not user_is_admin():
             return self.json_response('{"error":"Unauthorized"}', status=401)
 
         subscriptions = []
