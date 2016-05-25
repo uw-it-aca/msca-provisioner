@@ -18,7 +18,7 @@ def _admin(request, template):
     user = UserService().get_original_user()
     authz = Group()
     if not authz.is_member_of_group(user, settings.MSCA_MANAGER_ADMIN_GROUP):
-        return HttpResponseRedirect("/")
+        return HttpResponseRedirect("/login")
 
     curr_date = datetime.now().date()
 
