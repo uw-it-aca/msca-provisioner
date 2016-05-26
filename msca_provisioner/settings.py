@@ -84,7 +84,7 @@ AUTHENTICATION_BACKENDS = (
      'django.contrib.auth.backends.RemoteUserBackend',
 )
 
-#from django_mobileesp.detector import agent
+from django_mobileesp.detector import agent
 DETECT_USER_AGENTS = {
     'is_tablet': agent.detectTierTablet,
     'is_mobile': agent.detectMobileQuick,
