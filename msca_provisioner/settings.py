@@ -85,10 +85,10 @@ AUTHENTICATION_BACKENDS = (
 )
 
 #from django_mobileesp.detector import agent
-#DETECT_USER_AGENTS = {
-#    'is_tablet': agent.detectTierTablet,
-#    'is_mobile': agent.detectMobileQuick,
-#}
+DETECT_USER_AGENTS = {
+    'is_tablet': agent.detectTierTablet,
+    'is_mobile': agent.detectMobileQuick,
+}
 
 ROOT_URLCONF = 'msca_provisioner.urls'
 
