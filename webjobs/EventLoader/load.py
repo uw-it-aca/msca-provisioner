@@ -14,23 +14,25 @@ import os
 import time
 import django
 from django.core.management import call_command
+from logging import getLogger
 
 os.environ.setdefault(
         "DJANGO_SETTINGS_MODULE",
         "msca_provisioner.settings")
 
 django.setup()
+log = getLogger('provisioner')
 while True:
     in_time = int(time.time())
-
+    log.debug('calling load_subsciptions')
     call_command('load_subscriptions')
 
     run_time = int(time.time()) - in_time
     if run_time < 3:
-        print "Quick run: pause 15"
+        log.debug("Quick run: pause 15")
         time.sleep(15)
     elif run_time < 10:
-        print "Long run: pause 5"
+        log.debug("Long run: pause 5")
         time.sleep(10)
     else:
-        print "Ran %s seconds: no pause" % (run_time)
+        log.debug("Ran %s seconds: no pause" % (run_time))

@@ -12,6 +12,7 @@ class Loader(object):
 
     def load_subscription_events(self):
         try:
+            self._log.debug('Loader: gather subscription events')
             Gather(settings.AWS_SQS.get('SUBSCRIPTION'),
                    Subscription,
                    SubscriptionException).gather_events()

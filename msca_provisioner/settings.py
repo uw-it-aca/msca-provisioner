@@ -186,10 +186,12 @@ LOGGING = {
         },
         'provisioner': {
             'handlers': ['file'],
+            'propagate': True,
             'level': LOG_LEVEL
         },
         'events': {
             'handlers': ['file'],
+            'propagate': True,
             'level': LOG_LEVEL
         },
     }
