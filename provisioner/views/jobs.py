@@ -1,7 +1,6 @@
 from logging import getLogger
 from provisioner.models import Job
 from provisioner.views.rest_dispatch import RESTDispatch
-from provisioner.views import Authorization
 from userservice.user import UserService
 from django.utils.timezone import utc
 from datetime import datetime
