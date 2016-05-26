@@ -5,7 +5,7 @@ PyOpenSSL
 python-dateutil
 nameparser>=0.2.8
 pyodbc
-aenum==1.4.5
+enum34
 django-pyodbc-azure
 -e git+https://github.com/uw-it-aca/django-userservice#egg=Django-UserService
 -e git+https://github.com/uw-it-aca/uw-restclients#egg=RestClients
