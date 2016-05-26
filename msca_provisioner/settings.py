@@ -64,6 +64,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.auth.middleware.RemoteUserMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    'django_mobileesp.middleware.UserAgentDetectionMiddleware',
     'userservice.user.UserServiceMiddleware',
 )
 
