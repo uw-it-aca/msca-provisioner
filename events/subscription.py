@@ -80,8 +80,6 @@ class Subscription(Extract):
 
             self._log.info('Event %s on %s for %s, processing: %s' % (
                 subscription['type'], sub.subscription, sub.net_id, sub.state))
-
-            return
         except SubscriptionModel.DoesNotExist:
             sub = SubscriptionModel(
                 net_id=subscription['uwnetid'],
