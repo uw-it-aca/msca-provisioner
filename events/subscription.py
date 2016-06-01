@@ -73,13 +73,14 @@ class Subscription(Extract):
                 net_id=subscription['uwnetid'],
                 subscription=subscription['subscription'])
 
+            self._log.info('Event %s on %s for %s, processing: %s' % (
+                subscription['type'], sub.subscription, sub.net_id, sub.state))
+
             if not sub.in_process:
                 # let license processor figure out what to do
                 sub.state = SubscriptionModel.STATE_ACTIVATE
                 sub.save()
 
-            self._log.info('Event %s on %s for %s, processing: %s' % (
-                subscription['type'], sub.subscription, sub.net_id, sub.state))
         except SubscriptionModel.DoesNotExist:
             sub = SubscriptionModel(
                 net_id=subscription['uwnetid'],

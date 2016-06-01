@@ -1,6 +1,5 @@
 from provisioner.models import Subscription, SubscriptionCode
 from provisioner.views.rest_dispatch import RESTDispatch
-from provisioner.views import Authorization
 from django.db.models import Q
 import json
 
@@ -27,8 +26,8 @@ class SubscriptionListView(RESTDispatch):
                 json_data = sub.json_data()
                 json_data['subscription_name'] = None
                 try:
-                    json_data['subscription_name'] = SubscriptionCode.objects.get(
-                        code=sub.subscription).name
+                    json_data['subscription_name'] = SubscriptionCode.objects.filter(
+                        code=sub.subscription)[0].name
                 except:
                     pass
 

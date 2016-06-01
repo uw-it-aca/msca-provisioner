@@ -220,8 +220,7 @@ $(document).ready(function () {
                         table_api.row.add($(html));
                     });
 
-                    $('.provisioner-list').html(tpl(context));
-                    table_api.clear().draw();
+                    table_api.draw();
 
                     $('#user-count').show();
                     $('#user-count').html(context.user_count);
