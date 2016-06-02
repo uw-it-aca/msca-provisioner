@@ -7,6 +7,16 @@ from provisioner.resolve import Resolve
 from provisioner.exceptions import MSCAProvisionerException
 
 
+class LicenseAlreadyAppropriate(Exception):
+    """Exception for licensing already set/cleared"""
+    pass
+
+
+class UninterestingSubscriptionState(Exception):
+    """Exception for ignored subscription states"""
+    pass
+
+
 class License(Resolve):
     def process(self):
         limit = settings.O365_LIMITS['process']['default']
@@ -19,13 +29,12 @@ class License(Resolve):
             for activating_pk in activate:
                 try:
                     activating = Subscription.objects.get(pk=activating_pk)
-                    subscriptions = get_netid_subscriptions(
-                        activating.net_id, [activating.subscription])
+                    subscription = get_netid_subscriptions(
+                        activating.net_id, [activating.subscription])[0]
                     # remember name for later
-                    for sub_model in subscriptions:
-                        SubscriptionCode.objects.update_or_create(
-                            name=sub_model.subscription_name,
-                            code=sub_model.subscription_code)
+                    SubscriptionCode.objects.update_or_create(
+                        name=subscription.subscription_name,
+                        code=subscription.subscription_code)
                 except DataFailureException as ex:
                     if ex.status == 404:
                         self.log.warning('Subscription %s for netid %s does not exist' % (
@@ -36,37 +45,49 @@ class License(Resolve):
                     else:
                         raise
 
-                for sub in subscriptions:
-                    try:
-                        if sub.status_code == NWSSubscription.STATUS_PENDING:
+                try:
+                    if subscription.status_code == NWSSubscription.STATUS_PENDING:
+                        if self.add_subscription_licensing(activating):
                             activating.state = Subscription.STATE_ACTIVATING
-                            if self.add_subscription_licensing(activating):
-                                self.log.info(
-                                    'Activating subscription %s for %s' % (
-                                        activating.subscription,
-                                        activating.net_id))
-                            else:
-                                self.log.info(
-                                    'Subscription %s for %s already active' % (
-                                        activating.subscription,
-                                        activating.net_id))
-                        elif sub.status_code == NWSSubscription.STATUS_CANCELLING:
+                            self.log.info(
+                                'Activating subscription %s for %s' % (
+                                    activating.subscription,
+                                    activating.net_id))
+                        else:
+                            raise LicenseAlreadyAppropriate()
+                    elif subscription.status_code == NWSSubscription.STATUS_CANCELLING:
+                        if self.remove_subscription_licensing(activating):
                             activating.state = Subscription.STATE_DELETING
-                            if self.remove_subscription_licensing(activating):
-                                self.log.info(
-                                    'Deactivating subscription %s for %s' % (
-                                        activating.subscription,
-                                        activating.net_id))
-                            else:
-                                self.log.info(
-                                    'Subscription %s for %s already active' % (
-                                        activating.subscription,
-                                        activating.net_id))
-                    except MSCAProvisionerException as ex:
-                        self.log.error("Subscribe: %s" % (ex))
+                            self.log.info(
+                                'Deactivating subscription %s for %s' % (
+                                    activating.subscription,
+                                    activating.net_id))
+                        else:
+                            raise LicenseAlreadyAppropriate()
+                    else:
+                        raise UninterestingSubscriptionState()
 
-                activating.in_process = None
-                activating.save()
+                    activating.in_process = None
+                    activating.save()
+
+                except UninterestingSubscriptionState:
+                    self.log.info(
+                        'Subscription %s for %s state %s ignored' % (
+                            activating.subscription,
+                            activating.net_id,
+                            subscription.status_code))
+                    activating.delete()
+                except LicenseAlreadyAppropriate:
+                    self.log.info(
+                        'Subscription %s for %s appropriately licensed for %s' % (
+                            activating.net_id,
+                            activating.subscription,
+                            subscription.status_code))
+                    activating.delete()
+                except MSCAProvisionerException as ex:
+                    self.log.error("License subcode %s for %s: %s" % (
+                        activating.subscription, activating.net_id, ex))
+
         except Exception as ex:
             Subscription.objects.filter(pk__in=list(activate)).update(in_process=None)
             self.log.error('license: fatal error: %s' % (ex))
