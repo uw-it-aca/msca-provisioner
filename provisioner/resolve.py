@@ -8,7 +8,7 @@ import re
 
 
 class Resolve(object):
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         self.license_api = License()
         self.user_api = User()
         self.log = getLogger(__name__)

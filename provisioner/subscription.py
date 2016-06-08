@@ -1,17 +1,51 @@
+from django.conf import settings
 from restclients.uwnetid.subscription import modify_subscription_status
+from restclients.o365.user import User
 from restclients.models.uwnetid import Subscription as NWSSubscription
 from restclients.exceptions import DataFailureException
 from provisioner.models import Subscription as ProvisionSubscription
 from provisioner.resolve import Resolve
 from json import loads as json_loads
+import re
 
 
-class Subscription404Exception(Exception): pass
-class SubscriptionBusyException(Exception): pass
+class Subscription404Exception(Exception):
+    pass
+
+
+class SubscriptionBusyException(Exception):
+    pass
+
+
+class NoUserNetidException(Exception):
+    pass
 
 
 class Subscription(Resolve):
-    def reset(self, netid, subcode):
+    def __init__(self, *args, **kwargs):
+        super(Subscription, self).__init__(*args, **kwargs)
+        self._re_netid = re.compile(
+            r'^([^@]+)@%s$' % settings.RESTCLIENTS_O365_PRINCIPLE_DOMAIAN)
+
+    def netid_from_user(self, user):
+        match = self._re_netid.match(user.user_principal_name)
+        if not match:
+            raise NoUserNetidException()
+
+        return match.group(1)
+
+    def subscriptions_from_assigned_licenses(self, netid, licenses):
+        subscriptions = []
+        for code, plans in settings.O365_LICENSE_MAP.iteritems():
+            l = self.licensing_to_assign_from_assigned(code, licenses)
+            if not len(l):
+                subscriptions.append(ProvisionSubscription(
+                    net_id=netid, subscription=code,
+                    state=ProvisionSubscription.STATE_ACTIVE))
+
+        return subscriptions
+
+    def reprovision(self, netid, subcode):
         try:
             try:
                 sub = ProvisionSubscription.objects.get(
