@@ -290,6 +290,13 @@ AWS_SQS = {
     }
 }
 
+API_CONSUMERS = {}
+
+try:
+    API_CONSUMERS[os.environ['API_KEY_1']] = os.environ['API_SECRET_1']
+except:
+    pass
+
 # admin app settings
 ADMIN_EVENT_GRAPH_FREQ = 10
 ADMIN_SUBSCRIPTION_STATUS_FREQ = 30

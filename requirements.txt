@@ -4,6 +4,7 @@ django-appconf
 PyOpenSSL
 python-dateutil
 nameparser>=0.2.8
+oauth
 pyodbc
 enum34
 cffi

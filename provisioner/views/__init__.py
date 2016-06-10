@@ -4,12 +4,26 @@ from django.template import RequestContext
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect
 from userservice.user import UserService
+from provisioner import ProvisionerOAuth2, ProvisionerOAuth2Unauthorized
 from authz_group import Group
 from datetime import datetime
 import re
 
 
 class Authorization(object):
+    def __init__(self, *args, **kwargs):
+        self.oauth_validated = False
+
+    def validate_oauth(self, request):
+        try:
+            ProvisionerOAuth2(request).validate()
+            self.oauth_validated = True
+        except ProvisionerOAuth2Unauthorized:
+            self.oauth_validated = False
+
+    def is_oauth_validated(self):
+        return self.oauth_validated
+
     def _validate(self, group):
         user_service = UserService()
         authz = Group()
@@ -21,7 +35,7 @@ class Authorization(object):
             return authz.is_member_of_group(
                 uwnetid_match.group(1), group)
 
-        return authz.is_member_of_group(user, group)
+        return len(user) and authz.is_member_of_group(user, group)
 
     def is_admin(self):
         return self._validate(settings.MSCA_MANAGER_ADMIN_GROUP)

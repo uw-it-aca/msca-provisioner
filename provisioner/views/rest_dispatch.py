@@ -9,14 +9,21 @@ class RESTDispatch(object):
     """ Handles passing on the request to the correct view method
         based on the request type.
     """
+    def __init__(self, *args, **kwargs):
+        self.authorization = Authorization()
+
     def can_request(self):
-        return Authorization().is_support() or self.can_manage_jobs()
+        return (self.authorization.is_oauth_validated() or
+                self.authorization.is_support() or
+                self.can_manage_jobs())
 
     def can_manage_jobs(self):
-        return Authorization().is_admin()
+        return self.authorization.is_admin()
 
     def run(self, *args, **named_args):
         request = args[0]
+
+        self.authorization.validate_oauth(request)
 
         if "GET" == request.META['REQUEST_METHOD']:
             if hasattr(self, "GET"):
