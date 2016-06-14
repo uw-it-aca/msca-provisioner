@@ -4,7 +4,8 @@ from restclients.uwnetid.subscription import get_netid_subscriptions
 from restclients.models.uwnetid import Subscription as NWSSubscription
 from provisioner.models import Subscription, SubscriptionCode
 from provisioner.resolve import Resolve
-from provisioner.exceptions import MSCAProvisionerException
+from provisioner.exceptions import MSCAProvisionerException, \
+    MSCAProvisionerNetidNotFound
 
 
 class LicenseAlreadyAppropriate(Exception):
@@ -84,6 +85,16 @@ class License(Resolve):
                             activating.subscription,
                             subscription.status_code))
                     activating.delete()
+                except MSCAProvisionerNetidNotFound as ex:
+                    if subscription.status_code == NWSSubscription.STATUS_PENDING:
+                        self.log.error("Retry activate %s for %s later: %s" % (
+                            activating.subscription, activating.net_id, ex))
+                        activating.in_process = None
+                        activating.save()
+                    elif subscription.status_code == NWSSubscription.STATUS_CANCELLING:
+                        self.log.error("Deactivate: no netid %s with %s: %s" % (
+                            activating.net_id, activating.subscription, ex))
+                        activating.delete()
                 except MSCAProvisionerException as ex:
                     self.log.error("License subcode %s for %s: %s" % (
                         activating.subscription, activating.net_id, ex))

@@ -105,7 +105,8 @@ class Resolve(object):
                     if ex.status == 404:
                         odata = json_loads(ex.msg)['odata.error']
                         err_msg = odata['message']['value']
-                        ## TODO? deleted user cleanup
+                        raise MSCAProvisionerNetidNotFound(
+                            'License 404: %s: %s' % (netid, err_msg))
                     elif ex.status == 400:
                         odata = json_loads(ex.msg)['odata.error']
                         code = odata['code']
